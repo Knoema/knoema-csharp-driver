@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+    <metadata>
+        <id>Knoema.Client</id>
+        <version>$version$</version>
+        <authors>Knoema</authors>
+        <owners>Knoema</owners>
+        <copyright>© 2012 Knoema</copyright>
+        <licenseUrl>https://github.com/Knoema/knoema-csharp-driver</licenseUrl>
+        <projectUrl>https://github.com/Knoema/knoema-csharp-driver</projectUrl>
+        <description>Official C# client library for Knoema's API</description>
+        <tags>knoema csharp</tags>
+        <iconUrl>http://knoema.com/favicon.png</iconUrl>
+				<dependencies>
+					<dependency id="Newtonsoft.Json" version="$version$" />
+				</dependencies>
+		</metadata>
+	</package>
