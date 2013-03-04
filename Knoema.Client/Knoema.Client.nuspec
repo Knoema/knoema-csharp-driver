@@ -12,7 +12,7 @@
         <tags>knoema csharp</tags>
         <iconUrl>http://knoema.com/favicon.png</iconUrl>
 				<dependencies>
-					<dependency id="Newtonsoft.Json" version="$version$" />
+					<dependency id="Newtonsoft.Json" version="4.5.1" />
 				</dependencies>
 		</metadata>
 	</package>
