@@ -1,4 +1,4 @@
 knoema-csharp-driver
 ====================
 
-Official C# client library for Knoema APIs
+Official C# client library for Knoema's API
