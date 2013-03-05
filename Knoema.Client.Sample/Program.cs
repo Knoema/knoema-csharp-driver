@@ -30,7 +30,12 @@ namespace Knoema.ClientSample
 			var client = new Knoema.Client(
 				ConfigurationManager.AppSettings["host"], ConfigurationManager.AppSettings["client"],ConfigurationManager.AppSettings["secret"]);
 
+			Console.Write(string.Format("Getting dataset metadata... {0}", Environment.NewLine));
+
 			var dataset = await client.GetDataset("gquvbhe");
+
+			Console.Write("Dataset has {0} dimensions: {1}{2}", 
+				dataset.Dimensions.Count(), string.Join(", ", dataset.Dimensions.Select(x => x.Name).ToArray()), Environment.NewLine);
 
 			var stub = new List<PivotRequestItem>();
 			foreach (var dim in dataset.Dimensions)
@@ -46,6 +51,8 @@ namespace Knoema.ClientSample
 			var header = new PivotRequestItem() { DimensionId = "Time" };
 			for (var i = 1990; i < 2010; i++)
 				header.Members.Add(i);
+
+			Console.Write(string.Format("Getting dataset data... {0}", Environment.NewLine));
 
 			return await client.GetData(new PivotRequest()
 			{
