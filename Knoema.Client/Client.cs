@@ -18,26 +18,26 @@ namespace Knoema
 {
     public class Client
     {
-		string _client;
-		string _secret;
-		string _host;
+		string _appId;
+		string _appSecret;
+		Uri _uri;
 
 		public Client(string host)
 		{
-			_host = host;
+			Uri.TryCreate(string.Format("http://{0}", host), UriKind.Absolute, out _uri);
 		}
 
-		public Client(string host, string client, string secret)
+		public Client(string host, string appId, string appSecret)
 		{
-			_host = host;
-			_client = client;
-			_secret = secret;
+			Uri.TryCreate(string.Format("http://{0}", host), UriKind.Absolute, out _uri);
+			_appId = appId;
+			_appSecret = appSecret;
 		}
 
 		public Task<Dataset> GetDataset(string id)
 		{
 			return JsonConvert.DeserializeObjectAsync<Dataset>(
-				DataRequest(string.Format("{0}/api/1.0/meta/dataset/{1}", _host, id)).Result
+				DataRequest(string.Format("{0}api/1.0/meta/dataset/{1}", _uri.AbsoluteUri, id)).Result
 			);
 		}
 
@@ -45,7 +45,7 @@ namespace Knoema
 		{
 			return JsonConvert.DeserializeObjectAsync<Dimension>(
 				DataRequest(
-					string.Format("{0}/api/1.0/meta/dataset/{1}/dimension/{2}", _host, dataset, dimension)).Result
+					string.Format("{0}api/1.0/meta/dataset/{1}/dimension/{2}", _uri.AbsoluteUri, dataset, dimension)).Result
 			);
 		}
 
@@ -53,20 +53,20 @@ namespace Knoema
 		{
 			return JsonConvert.DeserializeObjectAsync<PivotResponse>(
 				DataRequest(
-					string.Format("{0}/api/1.0/data/pivot/", _host), JsonConvert.SerializeObject(pivot)).Result
+					string.Format("{0}api/1.0/data/pivot/", _uri.AbsoluteUri), JsonConvert.SerializeObject(pivot)).Result
 			);
 		}
 
 		Task<string> DataRequest(string url, string data = null)
 		{
-			var client = new HttpClient();			
-						
-			if(!string.IsNullOrEmpty(_client) && !string.IsNullOrEmpty(_secret))
-				client.DefaultRequestHeaders.Add("Authorization", 
-					string.Format("Knoema {0}:{1}", _client, 
+			var client = new HttpClient();
+
+			if (!string.IsNullOrEmpty(_appId) && !string.IsNullOrEmpty(_appSecret))
+				client.DefaultRequestHeaders.Add("Authorization",
+					string.Format("Knoema {0}:{1}", _appId, 
 						Convert.ToBase64String(
 							new HMACSHA1(
-								Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-mm-yy-hh"))).ComputeHash(Encoding.UTF8.GetBytes(_secret)))
+								Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-mm-yy-hh"))).ComputeHash(Encoding.UTF8.GetBytes(_appSecret)))
 					)
 				);
 
