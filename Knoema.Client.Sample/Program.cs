@@ -16,12 +16,11 @@ namespace Knoema.ClientSample
 			responseTask.Wait();
 		
 			responseTask.Result.Tuples.Take(10).ToList().ForEach(x =>
-				Console.Write(
-					string.Format("{0}{1}", string.Join(", ", x.Select(y => y.Key + ":" + y.Value).ToList()), Environment.NewLine)
-				)
+				Console.WriteLine(string.Join(", ", x.Select(y => y.Key + ":" + y.Value).ToList()))
 			);
 
-			Console.Write(string.Format("{0} rows of data are recieved. {1}", responseTask.Result.Tuples.Count, Environment.NewLine));
+			Console.WriteLine(string.Format("{0} rows of data have been received.", responseTask.Result.Tuples.Count));
+			Console.WriteLine("Press any key to exit.");
 			Console.ReadKey();
 		}
 
@@ -30,22 +29,22 @@ namespace Knoema.ClientSample
 			var client = new Knoema.Client(
 				ConfigurationManager.AppSettings["host"], ConfigurationManager.AppSettings["appId"], ConfigurationManager.AppSettings["appSecret"]);
 
-			Console.Write(string.Format("Getting dataset metadata... {0}", Environment.NewLine));
+			Console.WriteLine("Getting dataset metadata...");
 
 			var dataset = await client.GetDataset("gquvbhe");
 
-			Console.Write("Dataset has {0} dimensions: {1}.{2}", 
-				dataset.Dimensions.Count(), string.Join(", ", dataset.Dimensions.Select(x => x.Name).ToArray()), Environment.NewLine);
+			Console.WriteLine("Dataset has {0} dimensions: {1}.", 
+				dataset.Dimensions.Count(), string.Join(", ", dataset.Dimensions.Select(x => x.Name).ToArray()));
 
 			var stub = new List<PivotRequestItem>();
 			foreach (var dim in dataset.Dimensions)
 			{
-				Console.Write(string.Format("Getting \"{0}\" dataset dimension details... {1}", dim.Name, Environment.NewLine));
+				Console.WriteLine(string.Format("Getting \"{0}\" dataset dimension details...", dim.Name));
 
 				var dimension = await client.GetDatasetDimension(dataset.Id, dim.Id);
 
-				Console.Write(string.Format("Dimension \"{0}\" has {1} members: {2}. {3}",
-					dimension.Name, dimension.Items.Count(), string.Join(", ", dimension.Items.Select(x => x.Name.ToString()).ToArray()), Environment.NewLine));
+				Console.WriteLine(string.Format("Dimension \"{0}\" has {1} members: {2}.",
+					dimension.Name, dimension.Items.Count(), string.Join(", ", dimension.Items.Select(x => x.Name.ToString()).ToArray())));
 
 				stub.Add(new PivotRequestItem()
 				{
@@ -58,7 +57,7 @@ namespace Knoema.ClientSample
 			for (var i = 1990; i < 2010; i++)
 				header.Members.Add(i);
 
-			Console.Write(string.Format("Getting dataset data... {0}", Environment.NewLine));
+			Console.WriteLine("Getting dataset data...");
 
 			return await client.GetData(new PivotRequest()
 			{
