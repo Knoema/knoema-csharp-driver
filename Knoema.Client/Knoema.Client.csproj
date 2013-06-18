@@ -54,6 +54,14 @@
     <Compile Include="Data\PivotRequestItem.cs" />
     <Compile Include="Data\PivotResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Upload\DatasetUpload.cs" />
+    <Compile Include="Upload\DatasetUploadReport.cs" />
+    <Compile Include="Upload\FileProperties.cs" />
+    <Compile Include="Upload\FlatDatasetUpdateOptions.cs" />
+    <Compile Include="Upload\PostResult.cs" />
+    <Compile Include="Upload\UploadedDimensionDetails.cs" />
+    <Compile Include="Upload\UploadResult.cs" />
+    <Compile Include="Upload\VerifyResult.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Knoema.Client.nuspec">

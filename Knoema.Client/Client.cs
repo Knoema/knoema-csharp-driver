@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Knoema.Data;
 using Knoema.Meta;
 using Newtonsoft.Json;
+using Knoema.Upload;
 
 namespace Knoema
 {
@@ -35,52 +36,115 @@ namespace Knoema
 			_appSecret = appSecret;
 		}
 
-		public Task<Dataset> GetDataset(string id)
+		private HttpClient GetApiClient()
 		{
-			return JsonConvert.DeserializeObjectAsync<Dataset>(
-				DataRequest(string.Format("/api/1.0/meta/dataset/{0}", id)).Result
-			);
-		}
-
-		public Task<Dimension> GetDatasetDimension(string dataset, string dimension)
-		{
-			return JsonConvert.DeserializeObjectAsync<Dimension>(
-				DataRequest(string.Format("/api/1.0/meta/dataset/{0}/dimension/{1}", dataset, dimension)).Result
-			);
-		}
-
-		public Task<PivotResponse> GetData(PivotRequest pivot)
-		{
-			return JsonConvert.DeserializeObjectAsync<PivotResponse>(
-				DataRequest("/api/1.0/data/pivot/", JsonConvert.SerializeObject(pivot)).Result
-			);
-		}
-
-		Task<string> DataRequest(string path, string data = null)
-		{
-			var builder = new UriBuilder(_uri);
-			builder.Path = path;
-
-			
 			var client = new HttpClient();
 
 			if (!string.IsNullOrEmpty(_appId) && !string.IsNullOrEmpty(_appSecret))
 				client.DefaultRequestHeaders.Add("Authorization",
-					string.Format("Knoema {0}:{1}", _appId, 
+					string.Format("Knoema {0}:{1}", _appId,
 						Convert.ToBase64String(
 							new HMACSHA1(
 								Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-mm-yy-hh"))).ComputeHash(Encoding.UTF8.GetBytes(_appSecret)))
 					)
 				);
 
-			if (string.IsNullOrEmpty(data))
-				return client.GetStringAsync(builder.Uri);
-			else
+			return client;
+		}
+
+		private Task<T> ApiGet<T>(string path)
+		{
+			var builder = new UriBuilder(_uri);
+			builder.Path = path;
+
+			return JsonConvert.DeserializeObjectAsync<T>(GetApiClient().GetStringAsync(builder.Uri).Result);
+		}
+
+		private Task<T> ApiPost<T>(string path, HttpContent content)
+		{
+			var builder = new UriBuilder(_uri);
+			builder.Path = path;
+
+			return JsonConvert.DeserializeObjectAsync<T>(GetApiClient().PostAsync(builder.Uri, content).Result.Content.ReadAsStringAsync().Result);
+		}
+
+		private Task<T> ApiPost<T>(string path, object obj)
+		{
+			var content = new StringContent(JsonConvert.SerializeObject(obj));
+			content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+			
+			return ApiPost<T>(path, content);
+		}
+
+		public Task<Dataset> GetDataset(string id)
+		{
+			return ApiGet<Dataset>(string.Format("/api/1.0/meta/dataset/{0}", id));
+		}
+
+		public Task<Dimension> GetDatasetDimension(string dataset, string dimension)
+		{
+			return ApiGet<Dimension>(string.Format("/api/1.0/meta/dataset/{0}/dimension/{1}", dataset, dimension));
+		}
+
+		public Task<PivotResponse> GetData(PivotRequest pivot)
+		{
+			return ApiPost<PivotResponse>("/api/1.0/data/pivot/", pivot);
+		}
+
+		public Task<PostResult> UploadPost(string fileName)
+		{
+			var fi = new FileInfo(fileName);
+
+			using (var fs = fi.OpenRead())
 			{
-				var content = new StringContent(data);
-				content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-				return client.PostAsync(builder.Uri, content).Result.Content.ReadAsStringAsync();
+				var form = new MultipartFormDataContent();
+				form.Add(new StreamContent(fs), "\"file\"", "\"" + fi.Name + "\"");
+				return ApiPost<PostResult>("/api/1.0/upload/post/", form);
 			}
 		}
-    }
+
+		Task<VerifyResult> UploadVerify(string filePath)
+		{
+			return ApiGet<VerifyResult>(string.Format("api/1.0/upload/verify?filePath={0}", filePath)); 
+		}
+
+		Task<UploadResult> UploadSubmit(DatasetUpload upload)
+		{
+			return ApiPost<UploadResult>("api/1.0/upload/save/", upload);
+		}
+
+		public Task<UploadResult> UploadStatus(int uploadId)
+		{
+			return ApiGet<UploadResult>(string.Format("api/1.0/upload/status?id={0}", uploadId));
+		}
+
+		public Task<UploadResult> UploadDataset(string filename, string datasetName)
+		{
+			var postResult = UploadPost(filename).Result;
+			if (!postResult.Successful)
+				return null;
+
+			var verifyResult = UploadVerify(postResult.Properties.Location).Result;
+			if (!verifyResult.Successful)
+				return null;
+
+			var upload = new DatasetUpload()
+			{
+				Name = datasetName,
+				UploadFormatType = verifyResult.UploadFormatType,
+				Columns = verifyResult.Columns,
+				FlatDSUpdateOptions = verifyResult.FlatDSUpdateOptions,
+				FileProperty = postResult.Properties
+			};
+
+			var result = UploadSubmit(upload).Result;
+			while (UploadStatus(result.Id).Result.Status == "in progress")
+			{
+				System.Threading.Thread.Sleep(5000);
+			}
+
+			return UploadStatus(result.Id);
+		}
+
+	}
 }
