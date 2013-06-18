@@ -2,7 +2,7 @@
 {
 	public enum FlatDatasetUpdateOptions
 	{
-		OverWrite = 0,
+		Overwrite = 0,
 		Append = 1
 	}
 }

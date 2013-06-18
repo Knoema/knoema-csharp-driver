@@ -11,7 +11,16 @@ namespace Knoema.UploadClientSample
 	{
 		static void Main(string[] args)
 		{
-			var uploadTask = new Program().upload();
+			if (args.Length < 2)
+			{
+				Console.WriteLine("Syntax:");
+				Console.WriteLine("Knoema.UploadClientSample.exe [filename] [datasetName]");
+				Console.WriteLine();
+				Console.WriteLine("filename - complete file path");
+				Console.ReadKey();
+				return;
+			}
+			var uploadTask = Upload(args[0], args[1]);
 			uploadTask.Wait();
 			if (uploadTask.Result.Status == "Successful")
 				Console.WriteLine("The dataset upload is successful and it can be accessed across " + uploadTask.Result.Url);
@@ -21,39 +30,25 @@ namespace Knoema.UploadClientSample
 				foreach (var error in uploadTask.Result.Errors)
 					Console.WriteLine(error);
 			}
+
 			Console.WriteLine("Press any key to exit.");
 			Console.ReadKey();
 		}
 
-		public async Task<UploadResult> upload()
+		public async static Task<UploadResult> Upload(string filename, string datasetName)
 		{
 			var result = new UploadResult();
 
-			//var client = new Client(ConfigurationManager.AppSettings["host"], ConfigurationManager.AppSettings["clientId"]);
-			var client = new Knoema.Client(
-				ConfigurationManager.AppSettings["host"], ConfigurationManager.AppSettings["appId"], ConfigurationManager.AppSettings["appSecret"]);
-			var userName = ConfigurationManager.AppSettings["userName"];
-			Console.WriteLine("Logging in for user " + userName);
-			client.cookies = await client.Login(userName, ConfigurationManager.AppSettings["password"]);
-
-			if (client.cookies == null || client.cookies[".ASPXAUTH"] == null)
+			var client = new Knoema.Client("dev.knoema.org","IaHNjY1F66PKoA","wPWOE/dr0MvL4Da7ufmMGgTCFKw");
+			if(File.Exists(filename))
 			{
-				result.Status = "Failed";
-				result.Errors.Add("Login failed for user " + userName);
+				Console.WriteLine("Uploading dataset ...");
+				result = await client.UploadDataset(filename, datasetName);
 			}
 			else
 			{
-				var filename = ConfigurationManager.AppSettings["filename"];
-				if(File.Exists(filename))
-				{
-					Console.WriteLine("Uploading dataset ...");
-					result = await client.UploadDataset(filename, "samplename");
-				}
-				else
-				{
-					result.Status = "Failed";
-						result.Errors.Add("File not present in the provided path");
-				}
+				result.Status = "Failed";
+					result.Errors.Add("File not present in the provided path");
 			}
 			return result;
 		}
