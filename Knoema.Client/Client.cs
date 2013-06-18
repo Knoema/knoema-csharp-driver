@@ -24,12 +24,13 @@ namespace Knoema
 
 		public Client(string host)
 		{
-			Uri.TryCreate(string.Format("http://{0}", host), UriKind.Absolute, out _uri);
+			_uri = new UriBuilder(Uri.UriSchemeHttp, host).Uri;
 		}
 
 		public Client(string host, string appId, string appSecret)
 		{
-			Uri.TryCreate(string.Format("http://{0}", host), UriKind.Absolute, out _uri);
+			_uri = new UriBuilder(Uri.UriSchemeHttp, host).Uri;
+
 			_appId = appId;
 			_appSecret = appSecret;
 		}
@@ -37,28 +38,30 @@ namespace Knoema
 		public Task<Dataset> GetDataset(string id)
 		{
 			return JsonConvert.DeserializeObjectAsync<Dataset>(
-				DataRequest(string.Format("{0}api/1.0/meta/dataset/{1}", _uri.AbsoluteUri, id)).Result
+				DataRequest(string.Format("/api/1.0/meta/dataset/{0}", id)).Result
 			);
 		}
 
 		public Task<Dimension> GetDatasetDimension(string dataset, string dimension)
 		{
 			return JsonConvert.DeserializeObjectAsync<Dimension>(
-				DataRequest(
-					string.Format("{0}api/1.0/meta/dataset/{1}/dimension/{2}", _uri.AbsoluteUri, dataset, dimension)).Result
+				DataRequest(string.Format("/api/1.0/meta/dataset/{0}/dimension/{1}", dataset, dimension)).Result
 			);
 		}
 
 		public Task<PivotResponse> GetData(PivotRequest pivot)
 		{
 			return JsonConvert.DeserializeObjectAsync<PivotResponse>(
-				DataRequest(
-					string.Format("{0}api/1.0/data/pivot/", _uri.AbsoluteUri), JsonConvert.SerializeObject(pivot)).Result
+				DataRequest("/api/1.0/data/pivot/", JsonConvert.SerializeObject(pivot)).Result
 			);
 		}
 
-		Task<string> DataRequest(string url, string data = null)
+		Task<string> DataRequest(string path, string data = null)
 		{
+			var builder = new UriBuilder(_uri);
+			builder.Path = path;
+
+			
 			var client = new HttpClient();
 
 			if (!string.IsNullOrEmpty(_appId) && !string.IsNullOrEmpty(_appSecret))
@@ -70,14 +73,14 @@ namespace Knoema
 					)
 				);
 
-			if (!string.IsNullOrEmpty(data))
+			if (string.IsNullOrEmpty(data))
+				return client.GetStringAsync(builder.Uri);
+			else
 			{
-				var content = new StringContent(data);			
+				var content = new StringContent(data);
 				content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-				return client.PostAsync(url, content).Result.Content.ReadAsStringAsync();
+				return client.PostAsync(builder.Uri, content).Result.Content.ReadAsStringAsync();
 			}
-
-			return client.GetStringAsync(url);
 		}
     }
 }
