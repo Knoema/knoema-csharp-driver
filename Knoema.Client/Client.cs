@@ -57,7 +57,7 @@ namespace Knoema
 			var builder = new UriBuilder(_uri);
 			builder.Path = path;
 
-			return JsonConvert.DeserializeObjectAsync<T>(GetApiClient().GetStringAsync(builder.Uri).Result);
+			return GetApiClient().GetStringAsync(builder.Uri).Then((resp) => JsonConvert.DeserializeObjectAsync<T>(resp));
 		}
 
 		private Task<T> ApiPost<T>(string path, HttpContent content)
@@ -65,7 +65,8 @@ namespace Knoema
 			var builder = new UriBuilder(_uri);
 			builder.Path = path;
 
-			return JsonConvert.DeserializeObjectAsync<T>(GetApiClient().PostAsync(builder.Uri, content).Result.Content.ReadAsStringAsync().Result);
+			return GetApiClient().PostAsync(builder.Uri, content).Then((resp) => resp.Content.ReadAsStringAsync())
+				.Then((resp) => JsonConvert.DeserializeObjectAsync<T>(resp));
 		}
 
 		private Task<T> ApiPost<T>(string path, object obj)
