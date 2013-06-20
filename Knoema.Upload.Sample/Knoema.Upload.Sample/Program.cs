@@ -2,7 +2,7 @@
 using System.IO;
 using Knoema.Upload;
 
-namespace Upload.Sample
+namespace Knoema.Upload.Sample
 {
 	class Program
 	{
