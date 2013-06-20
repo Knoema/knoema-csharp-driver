@@ -1,14 +1,15 @@
 ﻿using System;
 using System.IO;
 using Knoema.Upload;
+using Newtonsoft.Json;
 
 namespace Knoema.Upload.Sample
 {
 	class Program
 	{
-		public static string host = "knoema.com";
-		public static string appId = "bEkcYAM"; // Replace with your application's id
-		public static string appSecret = "WtKKZbOPweAkIw"; // Replace with your application's secret
+		public static string host = "dev.knoema.org";
+		public static string appId = "M4MzHMw"; // Replace with your application's id
+		public static string appSecret = "hymfB5cfeZuaLA"; // Replace with your application's secret
 
 		static void Main(string[] args)
 		{
@@ -68,17 +69,17 @@ namespace Knoema.Upload.Sample
 				Console.WriteLine("Found following error(s) during file verification: {0}", string.Join(",", verifyResult.ErrorList.ToArray()));
 				return;
 			}
-
+			
 			Console.WriteLine("Processing file for upload...");
 
 			var submitResult = client.UploadSubmit(new DatasetUpload()
-								{
-									Name = datasetName,
-									UploadFormatType = verifyResult.UploadFormatType,
-									Columns = verifyResult.Columns,
-									FlatDSUpdateOptions = verifyResult.FlatDSUpdateOptions,
-									FileProperty = postResult.Properties
-								}).Result;
+			{
+				Name = datasetName,
+				UploadFormatType = verifyResult.UploadFormatType,
+				Columns = verifyResult.Columns,
+				FlatDSUpdateOptions = verifyResult.FlatDSUpdateOptions,
+				FileProperty = postResult.Properties
+			}).Result;
 
 			UploadResult uploadResult = null; ;
 			while (true)
@@ -97,7 +98,7 @@ namespace Knoema.Upload.Sample
 				Console.WriteLine("Found following error(s) while uploading file: {0}", string.Join(",", uploadResult.Errors.ToArray()));
 				return;
 			}
-
+			
 			Console.WriteLine("Finished upload process...\n");
 		}
 	}

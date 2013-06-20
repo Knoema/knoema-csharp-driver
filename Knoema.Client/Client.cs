@@ -117,8 +117,9 @@ namespace Knoema
 		{
 			var fi = new FileInfo(fileName);
 
-			using (var fs = fi.OpenRead())
+			//using (var fs = fi.OpenRead())
 			{
+				var fs = fi.OpenRead();
 				var form = new MultipartFormDataContent();
 				form.Add(new StreamContent(fs), "\"file\"", "\"" + fi.Name + "\"");
 				return ApiPost<PostResult>("/api/1.0/upload/post", form);
@@ -165,7 +166,7 @@ namespace Knoema
 				System.Threading.Thread.Sleep(5000);
 			}
 
-			return UploadStatus(result.Id);
+			return UploadStatus(0);
 		}
 
 	}
