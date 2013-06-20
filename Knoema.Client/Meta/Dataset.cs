@@ -9,9 +9,9 @@ namespace Knoema.Meta
 	public class Dataset
 	{
 		public string Id { get; set; }
+		public string Name { get; set; }
 		public string Ref { get; set; }
 		public DateTime? PublicationDate { get; set; }
-		public string Title { get; set; }
 		public IEnumerable<Dimension> Dimensions { get; set; }
 	}
 }

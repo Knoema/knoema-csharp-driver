@@ -19,19 +19,30 @@ namespace Knoema
 {
     public class Client
     {
+		string _host;
 		string _appId;
 		string _appSecret;
-		Uri _uri;
 
 		public Client(string host)
 		{
-			_uri = new UriBuilder(Uri.UriSchemeHttp, host).Uri;
+			if (string.IsNullOrEmpty(host))
+				throw new ArgumentNullException("host");
+
+			_host = host;
 		}
 
 		public Client(string host, string appId, string appSecret)
 		{
-			_uri = new UriBuilder(Uri.UriSchemeHttp, host).Uri;
+			if (string.IsNullOrEmpty(host))
+				throw new ArgumentNullException("host");
 
+			if (string.IsNullOrEmpty(appId))
+				throw new ArgumentNullException("appId");
+
+			if (string.IsNullOrEmpty(appSecret))
+				throw new ArgumentNullException("appSecret");
+
+			_host = host;
 			_appId = appId;
 			_appSecret = appSecret;
 		}
@@ -52,17 +63,22 @@ namespace Knoema
 			return client;
 		}
 
-		private Task<T> ApiGet<T>(string path)
+		private Task<T> ApiGet<T>(string path, string query = null)
 		{
-			var builder = new UriBuilder(_uri);
-			builder.Path = path;
+			var builder = new UriBuilder(Uri.UriSchemeHttp, _host);
+			
+			if (!string.IsNullOrEmpty(path))
+				builder.Path = path;
+
+			if (!string.IsNullOrEmpty(query))
+				builder.Query = query;
 
 			return GetApiClient().GetStringAsync(builder.Uri).Then((resp) => JsonConvert.DeserializeObjectAsync<T>(resp));
 		}
 
 		private Task<T> ApiPost<T>(string path, HttpContent content)
 		{
-			var builder = new UriBuilder(_uri);
+			var builder = new UriBuilder(Uri.UriSchemeHttp, _host);
 			builder.Path = path;
 
 			return GetApiClient().PostAsync(builder.Uri, content).Then((resp) => resp.Content.ReadAsStringAsync())
@@ -75,6 +91,11 @@ namespace Knoema
 			content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 			
 			return ApiPost<T>(path, content);
+		}
+
+		public Task<IEnumerable<Dataset>> ListDatasets()
+		{
+			return ApiGet<IEnumerable<Dataset>>("/api/1.0/meta/dataset");
 		}
 
 		public Task<Dataset> GetDataset(string id)
@@ -100,23 +121,23 @@ namespace Knoema
 			{
 				var form = new MultipartFormDataContent();
 				form.Add(new StreamContent(fs), "\"file\"", "\"" + fi.Name + "\"");
-				return ApiPost<PostResult>("/api/1.0/upload/post/", form);
+				return ApiPost<PostResult>("/api/1.0/upload/post", form);
 			}
 		}
 
 		Task<VerifyResult> UploadVerify(string filePath)
 		{
-			return ApiGet<VerifyResult>(string.Format("api/1.0/upload/verify?filePath={0}", filePath)); 
+			return ApiGet<VerifyResult>("/api/1.0/upload/verify", string.Format("filePath={0}", filePath)); 
 		}
 
 		Task<UploadResult> UploadSubmit(DatasetUpload upload)
 		{
-			return ApiPost<UploadResult>("api/1.0/upload/save/", upload);
+			return ApiPost<UploadResult>("/api/1.0/upload/save", upload);
 		}
 
 		public Task<UploadResult> UploadStatus(int uploadId)
 		{
-			return ApiGet<UploadResult>(string.Format("api/1.0/upload/status?id={0}", uploadId));
+			return ApiGet<UploadResult>("/api/1.0/upload/status", string.Format("id={0}", uploadId));
 		}
 
 		public Task<UploadResult> UploadDataset(string filename, string datasetName)
