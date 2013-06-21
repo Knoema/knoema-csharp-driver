@@ -46,31 +46,31 @@ namespace Knoema.Upload.Sample
 
 			var client = new Knoema.Client(host, appId, appSecret);
 
-			Console.WriteLine("Beginning upload process...\n");
+			Console.WriteLine("Beginning upload process");
 
-			Console.WriteLine("Uploading file to server started...");
+			Console.WriteLine("\nFile upload started");
 
 			var postResult = client.UploadPost(fileName).Result;
 			if (postResult.Successful)
-				Console.WriteLine("File uploaded successfully...");
+				Console.WriteLine("File uploaded successfully");
 			else
 			{
 				Console.WriteLine("Found following error during file upload: {0}", postResult.Error);
 				return;
 			}
 
-			Console.WriteLine("File verification started...");
+			Console.WriteLine("\nFile verification started");
 
 			var verifyResult = client.UploadVerify(postResult.Properties.Location).Result;
 			if (verifyResult.Successful)
-				Console.WriteLine("File verified successfully...");
+				Console.WriteLine("File verified successfully");
 			else
 			{
 				Console.WriteLine("Found following error(s) during file verification: {0}", string.Join(",", verifyResult.ErrorList.ToArray()));
 				return;
 			}
 			
-			Console.WriteLine("Processing file for upload...");
+			Console.WriteLine("\nProcessing file for upload");
 
 			var submitResult = client.UploadSubmit(new DatasetUpload()
 			{
@@ -81,25 +81,50 @@ namespace Knoema.Upload.Sample
 				FileProperty = postResult.Properties
 			}).Result;
 
-			UploadResult uploadResult = null; ;
+			UploadResult uploadResult = null;
+			var isPending = false;
+			var isProcessing = false;
 			while (true)
 			{
 				uploadResult = client.UploadStatus(submitResult.Id).Result;
-				if (string.Equals(uploadResult.Status, "in progress", StringComparison.InvariantCultureIgnoreCase))
+				if (string.Equals(uploadResult.Status, "pending"))
+				{
+					if (isPending)
+						Console.Write(".");
+					else
+					{
+						Console.Write("File is queued for processing");
+						isPending = true;
+					}
 					System.Threading.Thread.Sleep(5000); //wait for 5 secs before polling for status again
+				}
+				else if (string.Equals(uploadResult.Status, "processing"))
+				{
+					if (isProcessing)
+						Console.Write(".");
+					else
+					{
+						Console.Write("\nFile processing has started");
+						isProcessing = true;
+					}
+					System.Threading.Thread.Sleep(5000); //wait for 5 secs before polling for status again
+				}
 				else
 					break;
 			}
 
 			if (string.Equals(uploadResult.Status, "successful", StringComparison.InvariantCultureIgnoreCase))
-				Console.WriteLine("File is sucessfully uploaded. You can access it url: {0}", uploadResult.Url);
+			{
+				Console.WriteLine("\nFile uploaded sucessfully");
+				Console.WriteLine("You can access it url: {0}", uploadResult.Url);
+			}
 			else //failed
 			{
-				Console.WriteLine("Found following error(s) while uploading file: {0}", string.Join(",", uploadResult.Errors.ToArray()));
+				Console.WriteLine("\nFound following error(s) while uploading file: {0}", string.Join(",", uploadResult.Errors.ToArray()));
 				return;
 			}
 			
-			Console.WriteLine("Finished upload process...\n");
+			Console.WriteLine("\nFinished upload process\n");
 		}
 	}
 }
