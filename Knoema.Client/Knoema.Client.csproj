@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client.cs" />
+    <Compile Include="Meta\Column.cs" />
     <Compile Include="Meta\Dataset.cs" />
     <Compile Include="Meta\Dimension.cs" />
     <Compile Include="Meta\DimensionMember.cs" />

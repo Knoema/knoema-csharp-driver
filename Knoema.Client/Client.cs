@@ -126,9 +126,9 @@ namespace Knoema
 			}
 		}
 
-		public Task<VerifyResult> UploadVerify(string filePath)
+		public Task<VerifyResult> UploadVerify(string filePath, string existingDatasetIdToModify = null)
 		{
-			return ApiGet<VerifyResult>("/api/1.0/upload/verify", string.Format("filePath={0}", filePath)); 
+			return ApiGet<VerifyResult>("/api/1.0/upload/verify", string.Format("filePath={0}&datasetId={1}", filePath, existingDatasetIdToModify));
 		}
 
 		public Task<UploadResult> UploadSubmit(DatasetUpload upload)
