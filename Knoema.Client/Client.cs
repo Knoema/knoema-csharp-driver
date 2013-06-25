@@ -117,20 +117,21 @@ namespace Knoema
 		{
 			var fi = new FileInfo(fileName);
 
-			using (var fs = fi.OpenRead())
+			//using (var fs = fi.OpenRead())
 			{
+				var fs = fi.OpenRead();
 				var form = new MultipartFormDataContent();
 				form.Add(new StreamContent(fs), "\"file\"", "\"" + fi.Name + "\"");
 				return ApiPost<PostResult>("/api/1.0/upload/post", form);
 			}
 		}
 
-		Task<VerifyResult> UploadVerify(string filePath)
+		public Task<VerifyResult> UploadVerify(string filePath, string existingDatasetIdToModify = null)
 		{
-			return ApiGet<VerifyResult>("/api/1.0/upload/verify", string.Format("filePath={0}", filePath)); 
+			return ApiGet<VerifyResult>("/api/1.0/upload/verify", string.Format("filePath={0}&datasetId={1}", filePath, existingDatasetIdToModify));
 		}
 
-		Task<UploadResult> UploadSubmit(DatasetUpload upload)
+		public Task<UploadResult> UploadSubmit(DatasetUpload upload)
 		{
 			return ApiPost<UploadResult>("/api/1.0/upload/save", upload);
 		}
@@ -165,7 +166,7 @@ namespace Knoema
 				System.Threading.Thread.Sleep(5000);
 			}
 
-			return UploadStatus(result.Id);
+			return UploadStatus(0);
 		}
 
 	}
