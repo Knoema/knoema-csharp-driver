@@ -7,8 +7,8 @@
     <ProjectGuid>{5F02849C-B24C-47BF-A69C-C11ECDA4D1B9}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Knoema.Client.Sample</RootNamespace>
-    <AssemblyName>Knoema.Client.Sample</AssemblyName>
+    <RootNamespace>Knoema.Upload.Sample</RootNamespace>
+    <AssemblyName>Knoema.Upload.Sample</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

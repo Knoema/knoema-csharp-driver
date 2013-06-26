@@ -10,28 +10,41 @@ namespace Knoema.ClientSample
 {
 	class Program
 	{
+		private static string host = "knoema.com";
+		private static string appId = "OOBFP0U"; // Replace with your application's id
+		private static string appSecret = "bCAlu8hKP4sxKw"; // Replace with your application's secret
+		
 		static void Main(string[] args)
 		{
-			var responseTask = new Program().GetData();
-			responseTask.Wait();
+			if (args.Length == 0)
+				ListDatasets().Wait();
+			else
+			{
+				var datasetId = args[0];
+				GetData(datasetId).Wait();
+			}
 		
-			responseTask.Result.Tuples.Take(10).ToList().ForEach(x =>
-				Console.WriteLine(string.Join(", ", x.Select(y => y.Key + ":" + y.Value).ToList()))
-			);
-
-			Console.WriteLine(string.Format("{0} rows of data have been received.", responseTask.Result.Tuples.Count));
 			Console.WriteLine("Press any key to exit.");
 			Console.ReadKey();
 		}
 
-		public async Task<PivotResponse> GetData()
+		static async Task ListDatasets()
 		{
-			var client = new Knoema.Client(
-				ConfigurationManager.AppSettings["host"], ConfigurationManager.AppSettings["appId"], ConfigurationManager.AppSettings["appSecret"]);
+			var client = new Knoema.Client(host); // We do not supply app id and secret to fetch public datasets only
+			
+			Console.WriteLine("Getting dataset list...");
+			var datasets = await client.ListDatasets();
+			foreach (var ds in datasets)
+				Console.WriteLine("{0} - {1}", ds.Id, ds.Name);
+		}
+
+		static async Task GetData(string datasetId)
+		{
+			var client = new Knoema.Client(host, appId, appSecret);
 
 			Console.WriteLine("Getting dataset metadata...");
 
-			var dataset = await client.GetDataset("gquvbhe");
+			var dataset = await client.GetDataset(datasetId);
 
 			Console.WriteLine("Dataset has {0} dimensions: {1}.", 
 				dataset.Dimensions.Count(), string.Join(", ", dataset.Dimensions.Select(x => x.Name).ToArray()));
@@ -59,13 +72,18 @@ namespace Knoema.ClientSample
 
 			Console.WriteLine("Getting dataset data...");
 
-			return await client.GetData(new PivotRequest()
+			var result = await client.GetData(new PivotRequest()
 			{
-				Dataset = "gquvbhe",
+				Dataset = datasetId,
 				Frequencies = new List<string>() { "A" },
 				Stub = stub,
 				Header = new List<PivotRequestItem>() { header }
 			});
+			result.Tuples.Take(10).ToList().ForEach(x =>
+				Console.WriteLine(string.Join(", ", x.Select(y => y.Key + ":" + y.Value).ToList()))
+			);
+
+			Console.WriteLine(string.Format("{0} rows of data have been received.", result.Tuples.Count));
 		}
 	}
 }
