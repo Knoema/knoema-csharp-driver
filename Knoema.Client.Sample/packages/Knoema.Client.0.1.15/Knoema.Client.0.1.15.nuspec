@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>Knoema.Client</id>
-    <version>0.1.7</version>
+    <version>0.1.15</version>
     <title>Knoema.Client</title>
     <authors>Knoema</authors>
     <owners>Knoema</owners>
@@ -18,8 +18,5 @@
     <dependencies>
       <dependency id="Newtonsoft.Json" version="4.5.1" />
     </dependencies>
-    <references>
-      <reference file="Knoema.Client.dll" />
-    </references>
   </metadata>
 </package>
