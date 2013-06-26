@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Knoema.Client.Sample", "Knoema.Client.Sample.csproj", "{5F02849C-B24C-47BF-A69C-C11ECDA4D1B9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Knoema.Upload.Sample", "Knoema.Upload.Sample.csproj", "{5F02849C-B24C-47BF-A69C-C11ECDA4D1B9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Knoema.Client", "..\Knoema.Client\Knoema.Client.csproj", "{0D054031-66B3-4EC6-AA4B-5ABC49323E40}"
 EndProject
