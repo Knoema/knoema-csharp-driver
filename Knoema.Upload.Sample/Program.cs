@@ -8,8 +8,8 @@ namespace Knoema.Upload.Sample
 	class Program
 	{
 		public static string host = "dev.knoema.org";
-		public static string appId = "M4MzHMw"; // Replace with your application's id
-		public static string appSecret = "hymfB5cfeZuaLA"; // Replace with your application's secret
+		public static string appId = "6xS3jF0"; // Replace with your application's id
+		public static string appSecret = "acJj0buCHpNj4g"; // Replace with your application's secret
 
 		static void Main(string[] args)
 		{
@@ -72,14 +72,25 @@ namespace Knoema.Upload.Sample
 			
 			Console.WriteLine("\nProcessing file for upload");
 
-			var submitResult = client.UploadSubmit(new DatasetUpload()
+			var dsUpload = new DatasetUpload()
 			{
 				Name = datasetName,
 				UploadFormatType = verifyResult.UploadFormatType,
 				Columns = verifyResult.Columns,
 				FlatDSUpdateOptions = verifyResult.FlatDSUpdateOptions,
 				FileProperty = postResult.Properties
-			}).Result;
+			};
+
+			if (verifyResult.MetadataDetails != null)
+			{
+				dsUpload.Description = verifyResult.MetadataDetails.Description;
+				dsUpload.Source = verifyResult.MetadataDetails.Source;
+				dsUpload.Url = verifyResult.MetadataDetails.DatasetRef;
+				dsUpload.PubDate = verifyResult.MetadataDetails.PublicationDate;
+				dsUpload.AccessedOn = verifyResult.MetadataDetails.AccessedOn;
+			}
+
+			var submitResult = client.UploadSubmit(dsUpload).Result;
 
 			UploadResult uploadResult = null;
 			var isPending = false;
