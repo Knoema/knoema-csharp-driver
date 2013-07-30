@@ -23,6 +23,8 @@ namespace Knoema
 		string _appId;
 		string _appSecret;
 
+		const string AuthProtoVersion = "1.1";
+
 		public Client(string host)
 		{
 			if (string.IsNullOrEmpty(host))
@@ -53,10 +55,11 @@ namespace Knoema
 
 			if (!string.IsNullOrEmpty(_appId) && !string.IsNullOrEmpty(_appSecret))
 				client.DefaultRequestHeaders.Add("Authorization",
-					string.Format("Knoema {0}:{1}", _appId,
+					string.Format("Knoema {0}:{1}:{2}", _appId,
 						Convert.ToBase64String(
 							new HMACSHA1(
-								Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-mm-yy-hh"))).ComputeHash(Encoding.UTF8.GetBytes(_appSecret)))
+								Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-hh"))).ComputeHash(Encoding.UTF8.GetBytes(_appSecret))),
+								AuthProtoVersion
 					)
 				);
 
