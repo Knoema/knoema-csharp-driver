@@ -56,7 +56,7 @@ namespace Knoema
 					string.Format("Knoema {0}:{1}", _appId,
 						Convert.ToBase64String(
 							new HMACSHA1(
-								Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-mm-yy-hh"))).ComputeHash(Encoding.UTF8.GetBytes(_appSecret)))
+								Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-hh"))).ComputeHash(Encoding.UTF8.GetBytes(_appSecret)))
 					)
 				);
 
