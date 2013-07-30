@@ -8,8 +8,8 @@ namespace Knoema.Upload.Sample
 	class Program
 	{
 		public static string host = "dev.knoema.org";
-		public static string appId = "6xS3jF0"; // Replace with your application's id
-		public static string appSecret = "acJj0buCHpNj4g"; // Replace with your application's secret
+		public static string appId = "1BTrVoo"; // Replace with your application's id
+		public static string appSecret = "UF1P9UdwduFKbQ"; // Replace with your application's secret
 
 		static void Main(string[] args)
 		{
