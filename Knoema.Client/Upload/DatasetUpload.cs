@@ -5,6 +5,26 @@ namespace Knoema.Upload
 {
 	public class DatasetUpload
 	{
+		public DatasetUpload() { }
+
+		public DatasetUpload(VerifyResult verifyResult, PostResult postResult, string datasetId = null)
+		{
+			DatasetId = datasetId;
+			FileProperty = postResult.Properties;
+			UploadFormatType = verifyResult.UploadFormatType;
+			Columns = verifyResult.Columns;
+			FlatDSUpdateOptions = verifyResult.FlatDSUpdateOptions;
+			if (verifyResult.MetadataDetails != null)
+			{
+				Name = verifyResult.MetadataDetails.DatasetName;
+				Description = verifyResult.MetadataDetails.Description;
+				Source = verifyResult.MetadataDetails.Source;
+				Url = verifyResult.MetadataDetails.DatasetRef;
+				PubDate = verifyResult.MetadataDetails.PublicationDate;
+				AccessedOn = verifyResult.MetadataDetails.AccessedOn;
+			}
+		}
+
 		public string DatasetId { get; set; }
 		public string Description { get; set; }
 		public string Name { get; set; }
@@ -17,5 +37,6 @@ namespace Knoema.Upload
 		public string Url { get; set; }
 		public FlatDatasetUpdateOptions FlatDSUpdateOptions { get; set; }
 		public IDictionary<string, string> MetadataFieldValues { get; set; }
+		public int? StartAtRow { get; set; }
 	}
 }
