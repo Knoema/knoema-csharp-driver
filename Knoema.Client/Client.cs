@@ -22,6 +22,7 @@ namespace Knoema
 		string _host;
 		string _appId;
 		string _appSecret;
+		string _token;
 
 		const string AuthProtoVersion = "1.1";
 
@@ -31,6 +32,18 @@ namespace Knoema
 				throw new ArgumentNullException("host");
 
 			_host = host;
+		}
+
+		public Client(string host, string token)
+		{
+			if (string.IsNullOrEmpty(host))
+				throw new ArgumentNullException("host");
+
+			if (string.IsNullOrEmpty(token))
+				throw new ArgumentNullException("token");
+
+			_host = host;
+			_token = token;
 		}
 
 		public Client(string host, string appId, string appSecret)
@@ -73,6 +86,9 @@ namespace Knoema
 			if (!string.IsNullOrEmpty(path))
 				builder.Path = path;
 
+			if (!string.IsNullOrEmpty(_token))
+				query = query + "&access_token=" + _token;
+
 			if (!string.IsNullOrEmpty(query))
 				builder.Query = query;
 
@@ -83,6 +99,9 @@ namespace Knoema
 		{
 			var builder = new UriBuilder(Uri.UriSchemeHttp, _host);
 			builder.Path = path;
+
+			if (!string.IsNullOrEmpty(_token))
+				builder.Query = "access_token=" + _token;
 
 			return GetApiClient().PostAsync(builder.Uri, content).Then((resp) => resp.Content.ReadAsStringAsync())
 				.Then((resp) => JsonConvert.DeserializeObjectAsync<T>(resp));
@@ -165,7 +184,7 @@ namespace Knoema
 				System.Threading.Thread.Sleep(5000);
 			}
 
-			return UploadStatus(0);
+			return UploadStatus(result.Id);
 		}
 
 	}
