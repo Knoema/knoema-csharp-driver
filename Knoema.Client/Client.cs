@@ -24,7 +24,7 @@ namespace Knoema
 		string _appSecret;
 		string _token;
 
-		const string AuthProtoVersion = "1.1";
+		const string AuthProtoVersion = "1.2";
 
 		public Client(string host)
 		{
@@ -71,7 +71,7 @@ namespace Knoema
 					string.Format("Knoema {0}:{1}:{2}", _appId,
 						Convert.ToBase64String(
 							new HMACSHA1(
-								Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-hh"))).ComputeHash(Encoding.UTF8.GetBytes(_appSecret))),
+								Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-HH"))).ComputeHash(Encoding.UTF8.GetBytes(_appSecret))),
 								AuthProtoVersion
 					)
 				);
