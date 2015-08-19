@@ -17,8 +17,8 @@ using Knoema.Upload;
 
 namespace Knoema
 {
-    public class Client
-    {
+	public class Client
+	{
 		string _host;
 		string _appId;
 		string _appSecret;
@@ -82,7 +82,7 @@ namespace Knoema
 		private Task<T> ApiGet<T>(string path, string query = null)
 		{
 			var builder = new UriBuilder(Uri.UriSchemeHttp, _host);
-			
+
 			if (!string.IsNullOrEmpty(path))
 				builder.Path = path;
 
@@ -111,13 +111,15 @@ namespace Knoema
 		{
 			var content = new StringContent(JsonConvert.SerializeObject(obj));
 			content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-			
+
 			return ApiPost<T>(path, content);
 		}
 
-		public Task<IEnumerable<Dataset>> ListDatasets()
+		public Task<IEnumerable<Dataset>> ListDatasets(string source = null, string topic = null, string region = null)
 		{
-			return ApiGet<IEnumerable<Dataset>>("/api/1.0/meta/dataset");
+			return ApiGet<IEnumerable<Dataset>>("/api/1.0/meta/dataset", 
+				string.Format("source={0}&topic={1}&region={2}", 
+				source ?? string.Empty, topic ?? string.Empty, region ?? string.Empty));
 		}
 
 		public Task<Dataset> GetDataset(string id)
