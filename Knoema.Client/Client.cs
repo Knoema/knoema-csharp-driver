@@ -117,12 +117,16 @@ namespace Knoema
 
 		public Task<IEnumerable<Dataset>> ListDatasets(string source = null, string topic = null, string region = null)
 		{
-			var query = string.Empty
-				.AddUrlParam("source", source)
-				.AddUrlParam("topic", topic)
-				.AddUrlParam("region", region);
+			if (string.IsNullOrEmpty(source) && string.IsNullOrEmpty(topic) && string.IsNullOrEmpty(region))
+				return ApiGet<IEnumerable<Dataset>>("/api/1.0/meta/dataset");
 
-			return ApiGet<IEnumerable<Dataset>>("/api/1.0/meta/dataset", query);
+			return ApiPost<IEnumerable<Dataset>>("/api/1.0/meta/dataset", new Dictionary<string, string>()
+					{
+						{"source", source},
+						{"topic", topic},
+						{"region", region},
+						{"customMetadataFields", null}
+					});
 		}
 
 		public Task<Dataset> GetDataset(string id)
