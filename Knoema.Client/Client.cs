@@ -124,8 +124,7 @@ namespace Knoema
 					{
 						{"source", source},
 						{"topic", topic},
-						{"region", region},
-						{"customMetadataFields", null}
+						{"region", region}
 					});
 		}
 
