@@ -25,6 +25,7 @@ namespace Knoema
 		string _token;
 
 		const string AuthProtoVersion = "1.2";
+		const int HttpClientTimeout = 300 * 1000;
 
 		public Client(string host)
 		{
@@ -64,7 +65,7 @@ namespace Knoema
 
 		private HttpClient GetApiClient()
 		{
-			var client = new HttpClient();
+			var client = new HttpClient() { Timeout = TimeSpan.FromMilliseconds(HttpClientTimeout) };
 
 			if (!string.IsNullOrEmpty(_appId) && !string.IsNullOrEmpty(_appSecret))
 				client.DefaultRequestHeaders.Add("Authorization",
