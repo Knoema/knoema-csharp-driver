@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Newtonsoft.Json;
 
 namespace Knoema.Upload
 {
@@ -18,5 +17,7 @@ namespace Knoema.Upload
 		public DatasetUploadDetails MetadataDetails { get; set; }
 
 		public FlatDatasetUpdateOptions FlatDSUpdateOptions { get; set; }
+
+		public DatasetUploadReport AdvanceReport { get; set; }
 	}
 }
