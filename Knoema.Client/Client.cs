@@ -196,5 +196,15 @@ namespace Knoema
 			return UploadStatus(result.Id);
 		}
 
+		public Task<VerifyDatasetResult> VerifyDataset(string id, DateTime? publicationDate = null, string source = null, string refUrl = null)
+		{
+			return ApiPost<VerifyDatasetResult>("/api/1.0/meta/verifydataset", new
+			{
+				id = id,
+				publicationDate = publicationDate,
+				source = source,
+				refUrl = refUrl
+			});
+		}
 	}
 }

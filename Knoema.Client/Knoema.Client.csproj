@@ -66,6 +66,7 @@
     <Compile Include="Upload\PostResult.cs" />
     <Compile Include="Upload\UploadedDimensionDetails.cs" />
     <Compile Include="Upload\UploadResult.cs" />
+    <Compile Include="Upload\VerifyDatasetResult.cs" />
     <Compile Include="Upload\VerifyResult.cs" />
   </ItemGroup>
   <ItemGroup>
