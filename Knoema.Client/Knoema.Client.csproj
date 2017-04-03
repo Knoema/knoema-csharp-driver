@@ -79,6 +79,7 @@
     <Compile Include="Search\SearchScope.cs" />
     <Compile Include="Search\SearchTimeSeriesResponse.cs" />
     <Compile Include="Search\TimeSeriesDescriptor.cs" />
+    <Compile Include="TaskExtensions.cs" />
     <Compile Include="Upload\DimensionChanges.cs" />
     <Compile Include="Upload\MetadataChanges.cs" />
     <Compile Include="Upload\DatasetUpload.cs" />

@@ -73,14 +73,14 @@ namespace Knoema
 			return Access<TResponse>(message);
 		}
 
-		public async Task<TResponse> Access<TResponse>(HttpRequestMessage message)
+		public Task<TResponse> Access<TResponse>(HttpRequestMessage message)
 		{
 			if (!string.IsNullOrEmpty(_appId) && !string.IsNullOrEmpty(_appSecret))
 				message.Headers.Add("Authorization", GetAuthorizationValue(_appId, _appSecret));
 
-			var sendAsyncResponse = await _httpClient.SendAsync(message);
-			var contensResponse = await sendAsyncResponse.Content.ReadAsStringAsync();
-			return JsonConvert.DeserializeObject<TResponse>(contensResponse);
+			return _httpClient.SendAsync(message).
+				Then(resp => resp.Content.ReadAsStringAsync()).
+				Then(resp => Task.Run(() => JsonConvert.DeserializeObject<TResponse>(resp)));
 		}
 
 		private static string GetAuthorizationValue(string appId, string appSecret)
