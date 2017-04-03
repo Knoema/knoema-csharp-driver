@@ -1,13 +1,15 @@
 ﻿using System.Collections.Generic;
+using Newtonsoft.Json;
 
-namespace Knoema.Meta
+namespace Knoema.Data
 {
-	public class DimensionMember
+	public class PivotDatasetDimension
 	{
+		public string DimensionId { get; set; }
 		public int Key { get; set; }
 		public string Name { get; set; }
-		public int Level { get; set; }
-		public bool HasData { get; set; }
+
+		[JsonExtensionData]
 		public Dictionary<string, object> Fields { get; set; }
 	}
 }

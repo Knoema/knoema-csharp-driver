@@ -1,127 +1,61 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Net.Security;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using Knoema.Data;
 using Knoema.Meta;
-using Newtonsoft.Json;
 using Knoema.Upload;
 
 namespace Knoema
 {
-	public class Client
+	public class Client : ClientBase
 	{
-		string _host;
-		string _appId;
-		string _appSecret;
-		string _token;
-
-		const string AuthProtoVersion = "1.2";
-		const int HttpClientTimeout = 300 * 1000;
+		private const string _apiDataPivot = "/api/1.0/data/pivot/";
+		private const string _api11DataPivot = "/api/1.1/data/pivot/";
+		private const string _apiDataMultipivot = @"/api/1.0/data/multipivot";
+		private const string _apiMetaDataset = "/api/1.0/meta/dataset/{0}";
+		private const string _apiMetaDatasetList = "/api/1.0/meta/dataset";
+		private const string _apiMetaDatasetDimension = "/api/1.0/meta/dataset/{0}/dimension/{1}";
+		private const string _apiMetaDatasetDateRange = "/api/1.0/meta/dataset/{0}/daterange";
+		private const string _apiMetaVerifyDataset = "/api/1.0/meta/verifydataset";
+		private const string _apiUploadPost = "/api/1.0/upload/post";
+		private const string _apiUploadVerify = "/api/1.0/upload/verify";
+		private const string _apiUploadSave = "/api/1.0/upload/save";
+		private const string _apiUploadStatus = "/api/1.0/upload/status";
+		private const string _apiDataRaw = "/api/1.0/data/raw/";
 
 		public Client(string host)
-		{
-			if (string.IsNullOrEmpty(host))
-				throw new ArgumentNullException("host");
-
-			_host = host;
-		}
+			: base(host)
+		{ }
 
 		public Client(string host, string token)
-		{
-			if (string.IsNullOrEmpty(host))
-				throw new ArgumentNullException("host");
-
-			if (string.IsNullOrEmpty(token))
-				throw new ArgumentNullException("token");
-
-			_host = host;
-			_token = token;
-		}
+			: base(host, token)
+		{ }
 
 		public Client(string host, string appId, string appSecret)
+			: base(host, appId, appSecret)
+		{ }
+
+		public Task<Dataset> GetDataset(string datasetId)
 		{
-			if (string.IsNullOrEmpty(host))
-				throw new ArgumentNullException("host");
-
-			if (string.IsNullOrEmpty(appId))
-				throw new ArgumentNullException("appId");
-
-			if (string.IsNullOrEmpty(appSecret))
-				throw new ArgumentNullException("appSecret");
-
-			_host = host;
-			_appId = appId;
-			_appSecret = appSecret;
+			return _accessor.Get<Dataset>(string.Format(_apiMetaDataset, datasetId));
 		}
 
-		private HttpClient GetApiClient()
+		public Task<Dimension> GetDatasetDimension(string datasetId, string dimensionId)
 		{
-			var client = new HttpClient() { Timeout = TimeSpan.FromMilliseconds(HttpClientTimeout) };
-
-			if (!string.IsNullOrEmpty(_appId) && !string.IsNullOrEmpty(_appSecret))
-				client.DefaultRequestHeaders.Add("Authorization",
-					string.Format("Knoema {0}:{1}:{2}", _appId,
-						Convert.ToBase64String(
-							new HMACSHA1(
-								Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-HH"))).ComputeHash(Encoding.UTF8.GetBytes(_appSecret))),
-								AuthProtoVersion
-					)
-				);
-
-			return client;
+			return _accessor.Get<Dimension>(string.Format(_apiMetaDatasetDimension, datasetId, dimensionId));
 		}
 
-		private Task<T> ApiGet<T>(string path, string query = null)
-		{
-			var builder = new UriBuilder(Uri.UriSchemeHttp, _host);
-
-			if (!string.IsNullOrEmpty(path))
-				builder.Path = path;
-
-			if (!string.IsNullOrEmpty(_token))
-				query = query + "&access_token=" + _token;
-
-			if (!string.IsNullOrEmpty(query))
-				builder.Query = query;
-
-			return GetApiClient().GetStringAsync(builder.Uri).Then((resp) => JsonConvert.DeserializeObjectAsync<T>(resp));
-		}
-
-		private Task<T> ApiPost<T>(string path, HttpContent content)
-		{
-			var builder = new UriBuilder(Uri.UriSchemeHttp, _host);
-			builder.Path = path;
-
-			if (!string.IsNullOrEmpty(_token))
-				builder.Query = "access_token=" + _token;
-
-			return GetApiClient().PostAsync(builder.Uri, content).Then((resp) => resp.Content.ReadAsStringAsync())
-				.Then((resp) => JsonConvert.DeserializeObjectAsync<T>(resp));
-		}
-
-		private Task<T> ApiPost<T>(string path, object obj)
-		{
-			var content = new StringContent(JsonConvert.SerializeObject(obj));
-			content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-
-			return ApiPost<T>(path, content);
-		}
-
-		public Task<IEnumerable<Dataset>> ListDatasets(string source = null, string topic = null, string region = null)
+		public Task<List<Dataset>> ListDatasets(string source = null, string topic = null, string region = null)
 		{
 			if (string.IsNullOrEmpty(source) && string.IsNullOrEmpty(topic) && string.IsNullOrEmpty(region))
-				return ApiGet<IEnumerable<Dataset>>("/api/1.0/meta/dataset");
+				return _accessor.Get<List<Dataset>>(_apiMetaDatasetList);
 
-			return ApiPost<IEnumerable<Dataset>>("/api/1.0/meta/dataset", new Dictionary<string, string>()
+			return _accessor.Post<Dictionary<string, string>, List<Dataset>>(_apiMetaDatasetList,
+				new Dictionary<string, string>()
 					{
 						{"source", source},
 						{"topic", topic},
@@ -129,43 +63,84 @@ namespace Knoema
 					});
 		}
 
-		public Task<Dataset> GetDataset(string id)
+		public Task<PivotResponse> GetPivotData(PivotRequest pivot)
 		{
-			return ApiGet<Dataset>(string.Format("/api/1.0/meta/dataset/{0}", id));
+			return _accessor.Post<PivotRequest, PivotResponse>(_apiDataPivot, pivot);
 		}
 
-		public Task<Dimension> GetDatasetDimension(string dataset, string dimension)
+		public Task<List<PivotResponse>> GetMultipivotData(List<PivotRequest> pivots)
 		{
-			return ApiGet<Dimension>(string.Format("/api/1.0/meta/dataset/{0}/dimension/{1}", dataset, dimension));
+			return _accessor.Post<List<PivotRequest>, List<PivotResponse>>(_apiDataMultipivot, pivots);
 		}
 
-		public Task<PivotResponse> GetData(PivotRequest pivot)
+		public Task<PivotResponseWithToken> GetPivotDataBegin(PivotRequestWithAdvancedHeader request)
 		{
-			return ApiPost<PivotResponse>("/api/1.0/data/pivot/", pivot);
+			return _accessor.Post<PivotRequestWithAdvancedHeader, PivotResponseWithToken>(_apiDataRaw, request);
+		}
+
+		public Task<PivotResponseWithToken> GetPivotDataContinuation(string token)
+		{
+			var parameters = HttpUtility.ParseQueryString(string.Empty);
+			parameters.Add("continuationToken", token);
+			return _accessor.Get<PivotResponseWithToken>(_apiDataRaw, parameters);
+		}
+
+		public Task<FlatResponseWithToken> GetFlatDataBegin(PivotRequestWithAdvancedHeader request)
+		{
+			return _accessor.Post<PivotRequestWithAdvancedHeader, FlatResponseWithToken>(_apiDataRaw, request);
+		}
+
+		public Task<FlatResponseWithToken> GetFlatDataContinuation(string token)
+		{
+			var parameters = HttpUtility.ParseQueryString(string.Empty);
+			parameters.Add("continuationToken", token);
+			return _accessor.Get<FlatResponseWithToken>(_apiDataRaw, parameters);
 		}
 
 		public Task<PostResult> UploadPost(string fileName)
 		{
-			var fi = new FileInfo(fileName);
-			var fs = fi.OpenRead();
-			var form = new MultipartFormDataContent();
-			form.Add(new StreamContent(fs), "\"file\"", "\"" + fi.Name + "\"");
-			return ApiPost<PostResult>("/api/1.0/upload/post", form);
+			var fileInfo = new FileInfo(fileName);
+			var fileStream = fileInfo.OpenRead();
+			
+			var content = new MultipartFormDataContent();
+			content.Add(new StreamContent(fileStream), "\"file\"", "\"" + fileInfo.Name + "\"");
+
+			var uri = _accessor.GetUri(_apiUploadPost);
+			var message = new HttpRequestMessage(HttpMethod.Post, uri) { Content = content };
+			return _accessor.Access<PostResult>(message);
+			
 		}
 
 		public Task<VerifyResult> UploadVerify(string filePath, string existingDatasetIdToModify = null)
 		{
-			return ApiGet<VerifyResult>("/api/1.0/upload/verify", string.Format("filePath={0}&datasetId={1}", filePath, existingDatasetIdToModify));
+			var parameters = HttpUtility.ParseQueryString(string.Empty);
+			parameters.Add("filePath", filePath);
+			parameters.Add("datasetId", existingDatasetIdToModify);
+			return _accessor.Get<VerifyResult>(_apiUploadVerify, parameters);
 		}
 
 		public Task<UploadResult> UploadSubmit(DatasetUpload upload)
 		{
-			return ApiPost<UploadResult>("/api/1.0/upload/save", upload);
+			return _accessor.Post<DatasetUpload, UploadResult>(_apiUploadSave, upload);
 		}
 
 		public Task<UploadResult> UploadStatus(int uploadId)
 		{
-			return ApiGet<UploadResult>("/api/1.0/upload/status", string.Format("id={0}", uploadId));
+			var parameters = HttpUtility.ParseQueryString(string.Empty);
+			parameters.Add("id", uploadId.ToString());
+			return _accessor.Get<UploadResult>(_apiUploadStatus, parameters);
+		}
+
+		public Task<VerifyDatasetResult> VerifyDataset(string id, DateTime? publicationDate = null, string source = null, string refUrl = null)
+		{
+			var request = new VerifyDatasetRequest()
+			{
+				Id = id,
+				PublicationDate = publicationDate,
+				Source = source,
+				RefUrl = refUrl
+			};
+			return _accessor.Post<VerifyDatasetRequest, VerifyDatasetResult>(_apiMetaVerifyDataset, request);
 		}
 
 		public Task<UploadResult> UploadDataset(string filename, string datasetName)
@@ -189,22 +164,14 @@ namespace Knoema
 
 			var result = UploadSubmit(upload).Result;
 			while (UploadStatus(result.Id).Result.Status == "in progress")
-			{
 				System.Threading.Thread.Sleep(5000);
-			}
 
 			return UploadStatus(result.Id);
 		}
 
-		public Task<VerifyDatasetResult> VerifyDataset(string id, DateTime? publicationDate = null, string source = null, string refUrl = null)
+		public Task<DateRange> GetDatasetDateRange(string datasetId)
 		{
-			return ApiPost<VerifyDatasetResult>("/api/1.0/meta/verifydataset", new
-			{
-				id = id,
-				publicationDate = publicationDate,
-				source = source,
-				refUrl = refUrl
-			});
+			return _accessor.Get<DateRange>(string.Format(_apiMetaDatasetDateRange, datasetId));
 		}
 	}
 }

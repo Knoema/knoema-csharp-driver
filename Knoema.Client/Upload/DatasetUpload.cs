@@ -36,7 +36,7 @@ namespace Knoema.Upload
 		public object UploadFormatType { get; set; }
 		public string Url { get; set; }
 		public FlatDatasetUpdateOptions FlatDSUpdateOptions { get; set; }
-		public IDictionary<string, string> MetadataFieldValues { get; set; }
+		public Dictionary<string, string> MetadataFieldValues { get; set; }
 		public int? StartAtRow { get; set; }
 	}
 }

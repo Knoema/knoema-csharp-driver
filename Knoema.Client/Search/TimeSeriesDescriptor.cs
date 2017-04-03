@@ -1,0 +1,23 @@
+﻿using System.Collections.Generic;
+
+namespace Knoema.Search
+{
+	public class TimeSeriesDescriptor
+	{
+		public DatasetDescriptor Dataset { get; set; }
+		public List<DimensionMemberDescriptor> Dimensions { get; set; }
+		public List<RegionLink> RegionLinks { get; set; }
+		public int TimeSeriesKey { get; set; }
+		public float Weight { get; set; }
+		public double UsedPart { get; set; }
+		public string Owner { get; set; }
+		public string StartDate { get; set; }
+		public string EndDate { get; set; }
+		public bool HasForecasting { get; set; }
+		public bool IsLongTimeSeries { get; set; }
+		public bool IsLowWeight { get; set; }
+		public string Title { get; set; }
+		public string Type { get; set; }
+		public char Frequency { get; set; }
+	}
+}
