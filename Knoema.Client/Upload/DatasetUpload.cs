@@ -31,12 +31,12 @@ namespace Knoema.Upload
 		public DateTime? PubDate { get; set; }
 		public DateTime? AccessedOn { get; set; }
 		public string Source { get; set; }
-		public List<object> Columns { get; set; }
+		public IList<object> Columns { get; set; }
 		public FileProperties FileProperty { get; set; }
 		public object UploadFormatType { get; set; }
 		public string Url { get; set; }
 		public FlatDatasetUpdateOptions FlatDSUpdateOptions { get; set; }
-		public IDictionary<string, string> MetadataFieldValues { get; set; }
+		public Dictionary<string, string> MetadataFieldValues { get; set; }
 		public int? StartAtRow { get; set; }
 	}
 }

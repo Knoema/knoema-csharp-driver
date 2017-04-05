@@ -1,17 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Knoema.Meta
 {
 	public class DimensionMember
 	{
-		public virtual int Key { get; set; }
-		public virtual string Name { get; set; }
-		public virtual int Level { get; set; }
-		public virtual bool HasData { get; set; }
-		public virtual Dictionary<string, object> Fields { get; set; }
+		public int Key { get; set; }
+		public string Name { get; set; }
+		public int Level { get; set; }
+		public bool HasData { get; set; }
+		public Dictionary<string, object> Fields { get; set; }
 	}
 }

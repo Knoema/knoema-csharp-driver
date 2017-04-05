@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Knoema.Meta
 {
@@ -16,7 +13,7 @@ namespace Knoema.Meta
 		public string HasGeoDimension { get; set; }
 		public string RegionDimensionId { get; set; }
 		public DateTime? PublicationDate { get; set; }
-		public IEnumerable<Dimension> Dimensions { get; set; }
-		public IEnumerable<Column> Columns { get; set; }
+		public IList<Dimension> Dimensions { get; set; }
+		public IList<Column> Columns { get; set; }
 	}
 }
