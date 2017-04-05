@@ -2,9 +2,9 @@
 
 namespace Knoema.Data
 {
-	public class FlatResponseWithToken
+	public class RegularTimeSeriesRawDataResponse
 	{
 		public string ContinuationToken { get; set; }
-		public List<FlatResponseWithTokenData> Data { get; set; }
+		public IList<RegularTimeSeriesRawData> Data { get; set; }
 	}
 }

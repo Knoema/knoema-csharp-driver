@@ -5,8 +5,8 @@ namespace Knoema.Search
 	public class TimeSeriesDescriptor
 	{
 		public DatasetDescriptor Dataset { get; set; }
-		public List<DimensionMemberDescriptor> Dimensions { get; set; }
-		public List<RegionLink> RegionLinks { get; set; }
+		public IList<DimensionMemberDescriptor> Dimensions { get; set; }
+		public IList<RegionLink> RegionLinks { get; set; }
 		public int TimeSeriesKey { get; set; }
 		public float Weight { get; set; }
 		public double UsedPart { get; set; }

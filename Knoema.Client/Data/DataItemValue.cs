@@ -4,33 +4,33 @@ using Newtonsoft.Json;
 
 namespace Knoema.Data
 {
-	public enum AttributeType
+	public enum DataItemType
 	{
-		Base,
-		DateTime,
-		Unit
+		Detail,
+		Time,
+		Measure
 	}
 
-	public abstract class AttributeFlat
+	public abstract class DataItemValue
 	{
 		[JsonExtensionData]
 		public Dictionary<string, object> Fields { get; set; }
 		public string Name { get; set; }
-		public AttributeType Type { get; set; }
+		public DataItemType Type { get; set; }
 	}
 
-	public class AttributeBase : AttributeFlat
+	public class DataItemDetail : DataItemValue
 	{
 		public object Value { get; set; }
 	}
 
-	public class AttributeDate : AttributeFlat
+	public class DataItemTime : DataItemValue
 	{
 		public DateTime Date { get; set; }
 		public string Frequency { get; set; }
 	}
 
-	public class AttributeUnit : AttributeFlat
+	public class DataItemMeasure : DataItemValue
 	{
 		public object Value { get; set; }
 		public string Unit { get; set; }

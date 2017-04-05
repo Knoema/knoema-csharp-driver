@@ -4,6 +4,6 @@ namespace Knoema.Search
 {
 	public class SearchTimeSeriesResponse
 	{
-		public List<TimeSeriesDescriptor> Items { get; set; }
+		public IList<TimeSeriesDescriptor> Items { get; set; }
 	}
 }

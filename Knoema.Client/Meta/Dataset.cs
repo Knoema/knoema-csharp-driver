@@ -13,7 +13,7 @@ namespace Knoema.Meta
 		public string HasGeoDimension { get; set; }
 		public string RegionDimensionId { get; set; }
 		public DateTime? PublicationDate { get; set; }
-		public List<Dimension> Dimensions { get; set; }
-		public List<Column> Columns { get; set; }
+		public IList<Dimension> Dimensions { get; set; }
+		public IList<Column> Columns { get; set; }
 	}
 }

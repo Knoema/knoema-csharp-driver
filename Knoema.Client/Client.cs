@@ -2,20 +2,28 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
+using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using Knoema.Data;
 using Knoema.Meta;
+using Knoema.Search;
 using Knoema.Upload;
+using Newtonsoft.Json;
+using System.Linq;
 
 namespace Knoema
 {
-	public class Client : ClientBase
+	public class Client
 	{
+		private const string _clientId = "EZj54KGFo3rzIvnLczrElvAitEyU28DGw9R73tif";
+
 		private const string _apiDataPivot = "/api/1.0/data/pivot/";
 		private const string _api11DataPivot = "/api/1.1/data/pivot/";
-		private const string _apiDataMultipivot = @"/api/1.0/data/multipivot";
+		private const string _apiDataMultipivot = "/api/1.0/data/multipivot";
 		private const string _apiMetaDataset = "/api/1.0/meta/dataset/{0}";
 		private const string _apiMetaDatasetList = "/api/1.0/meta/dataset";
 		private const string _apiMetaDatasetDimension = "/api/1.0/meta/dataset/{0}/dimension/{1}";
@@ -26,35 +34,135 @@ namespace Knoema
 		private const string _apiUploadSave = "/api/1.0/upload/save";
 		private const string _apiUploadStatus = "/api/1.0/upload/status";
 		private const string _apiDataRaw = "/api/1.0/data/raw/";
+		private const string _apiSearch = "/api/1.0/search";
+		private const string _apiSearchConfig = "/api/1.0/search/config";
+
+		private readonly string _host;
+		private readonly string _appId;
+		private readonly string _appSecret;
+		private readonly string _token;
+		private readonly HttpClient _httpClient;
+
+		private string _searchHost;
+
+		private const string _authProtoVersion = "1.2";
+		private const int _httpClientTimeout = 300 * 1000;
 
 		public Client(string host)
-			: base(host)
-		{ }
+		{
+			if (string.IsNullOrEmpty(host))
+				throw new ArgumentNullException("host");
+
+			_host = host;
+
+			var clientHandler = new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
+			_httpClient = new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(_httpClientTimeout) };
+		}
 
 		public Client(string host, string token)
-			: base(host, token)
-		{ }
+			: this(host)
+		{
+			if (string.IsNullOrEmpty(token))
+				throw new ArgumentNullException("token");
+
+			_token = token;
+		}
 
 		public Client(string host, string appId, string appSecret)
-			: base(host, appId, appSecret)
-		{ }
+			: this(host)
+		{
+			if (string.IsNullOrEmpty(appId))
+				throw new ArgumentNullException("appId");
+
+			if (string.IsNullOrEmpty(appSecret))
+				throw new ArgumentNullException("appSecret");
+
+			_appId = appId;
+			_appSecret = appSecret;
+		}
+
+		private async Task<string> GetSearchHost()
+		{
+			if (_searchHost == null)
+			{
+				var parameters = new Dictionary<string, string>();
+				parameters.Add("client_id", _clientId);
+				var response = await Get<ConfigResponse>(_apiSearchConfig, parameters);
+				_searchHost = response.SearchHost;
+			}
+			return _searchHost;
+		}
+
+		private static Uri GetUri(string host, string token, string path, Dictionary<string, string> parameters = null)
+		{
+			if (!string.IsNullOrEmpty(token))
+			{
+				if (parameters == null)
+					parameters = new Dictionary<string, string>();
+				parameters.Add("access_token", token);
+			}
+			var builder = new UriBuilder
+			{
+				Host = host,
+				Path = path,
+				Query = parameters != null ? string.Join("&", parameters.Select(pair => string.Format("{0}={1}", pair.Key, pair.Value))) : string.Empty
+			};
+			return builder.Uri;
+		}
+
+		private Uri GetDataUri(string path, Dictionary<string, string> parameters = null)
+		{
+			return GetUri(_host, _token, path, parameters);
+		}
+
+		public Task<T> Get<T>(string path, Dictionary<string, string> parameters = null)
+		{
+			var message = new HttpRequestMessage(HttpMethod.Get, GetDataUri(path, parameters));
+			return Access<T>(message);
+		}
+
+		public Task<TResponse> Post<TRequest, TResponse>(string path, TRequest request, Dictionary<string, string> parameters = null)
+		{
+			var message = new HttpRequestMessage(HttpMethod.Post, GetDataUri(path, parameters))
+			{
+				Content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json")
+			};
+			return Access<TResponse>(message);
+		}
+
+		public async Task<TResponse> Access<TResponse>(HttpRequestMessage message)
+		{
+			if (!string.IsNullOrEmpty(_appId) && !string.IsNullOrEmpty(_appSecret))
+				message.Headers.Add("Authorization", GetAuthorizationValue(_appId, _appSecret));
+
+			var sendAsyncResp = await _httpClient.SendAsync(message);
+			var strRead = await sendAsyncResp.Content.ReadAsStringAsync();
+			return JsonConvert.DeserializeObject<TResponse>(strRead);
+		}
+
+		private static string GetAuthorizationValue(string appId, string appSecret)
+		{
+			return string.Format("Knoema {0}:{1}:{2}", appId,
+					Convert.ToBase64String(new HMACSHA1(Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-HH"))).ComputeHash(Encoding.UTF8.GetBytes(appSecret))),
+					_authProtoVersion);
+		}
 
 		public Task<Dataset> GetDataset(string datasetId)
 		{
-			return _accessor.Get<Dataset>(string.Format(_apiMetaDataset, datasetId));
+			return Get<Dataset>(string.Format(_apiMetaDataset, datasetId));
 		}
 
 		public Task<Dimension> GetDatasetDimension(string datasetId, string dimensionId)
 		{
-			return _accessor.Get<Dimension>(string.Format(_apiMetaDatasetDimension, datasetId, dimensionId));
+			return Get<Dimension>(string.Format(_apiMetaDatasetDimension, datasetId, dimensionId));
 		}
 
 		public Task<List<Dataset>> ListDatasets(string source = null, string topic = null, string region = null)
 		{
 			if (string.IsNullOrEmpty(source) && string.IsNullOrEmpty(topic) && string.IsNullOrEmpty(region))
-				return _accessor.Get<List<Dataset>>(_apiMetaDatasetList);
+				return Get<List<Dataset>>(_apiMetaDatasetList);
 
-			return _accessor.Post<Dictionary<string, string>, List<Dataset>>(_apiMetaDatasetList,
+			return Post<Dictionary<string, string>, List<Dataset>>(_apiMetaDatasetList,
 				new Dictionary<string, string>()
 					{
 						{"source", source},
@@ -63,72 +171,72 @@ namespace Knoema
 					});
 		}
 
-		public Task<PivotResponse> GetPivotData(PivotRequest pivot)
+		public Task<PivotResponse> GetData(PivotRequest pivot)
 		{
-			return _accessor.Post<PivotRequest, PivotResponse>(_apiDataPivot, pivot);
+			return Post<PivotRequest, PivotResponse>(_apiDataPivot, pivot);
 		}
 
-		public Task<List<PivotResponse>> GetMultipivotData(List<PivotRequest> pivots)
+		public Task<List<PivotResponse>> GetData(List<PivotRequest> pivots)
 		{
-			return _accessor.Post<List<PivotRequest>, List<PivotResponse>>(_apiDataMultipivot, pivots);
+			return Post<List<PivotRequest>, List<PivotResponse>>(_apiDataMultipivot, pivots);
 		}
 
-		public Task<PivotResponseWithToken> GetPivotDataBegin(PivotRequestWithAdvancedHeader request)
+		public Task<RegularTimeSeriesRawDataResponse> GetDataBegin(PivotRequest pivot)
 		{
-			return _accessor.Post<PivotRequestWithAdvancedHeader, PivotResponseWithToken>(_apiDataRaw, request);
+			return Post<PivotRequest, RegularTimeSeriesRawDataResponse>(_apiDataRaw, pivot);
 		}
 
-		public Task<PivotResponseWithToken> GetPivotDataContinuation(string token)
+		public Task<RegularTimeSeriesRawDataResponse> GetDataContinuation(string token)
 		{
-			var parameters = HttpUtility.ParseQueryString(string.Empty);
+			var parameters = new Dictionary<string, string>();
 			parameters.Add("continuationToken", token);
-			return _accessor.Get<PivotResponseWithToken>(_apiDataRaw, parameters);
+			return Get<RegularTimeSeriesRawDataResponse>(_apiDataRaw, parameters);
 		}
 
-		public Task<FlatResponseWithToken> GetFlatDataBegin(PivotRequestWithAdvancedHeader request)
+		public Task<FlatTimeSeriesRawDataResponse> GetFlatDataBegin(PivotRequest pivot)
 		{
-			return _accessor.Post<PivotRequestWithAdvancedHeader, FlatResponseWithToken>(_apiDataRaw, request);
+			return Post<PivotRequest, FlatTimeSeriesRawDataResponse>(_apiDataRaw, pivot);
 		}
 
-		public Task<FlatResponseWithToken> GetFlatDataContinuation(string token)
+		public Task<FlatTimeSeriesRawDataResponse> GetFlatDataContinuation(string token)
 		{
-			var parameters = HttpUtility.ParseQueryString(string.Empty);
+			var parameters = new Dictionary<string, string>();
 			parameters.Add("continuationToken", token);
-			return _accessor.Get<FlatResponseWithToken>(_apiDataRaw, parameters);
+			return Get<FlatTimeSeriesRawDataResponse>(_apiDataRaw, parameters);
 		}
 
 		public Task<PostResult> UploadPost(string fileName)
 		{
 			var fileInfo = new FileInfo(fileName);
 			var fileStream = fileInfo.OpenRead();
-			
+
 			var content = new MultipartFormDataContent();
 			content.Add(new StreamContent(fileStream), "\"file\"", "\"" + fileInfo.Name + "\"");
 
-			var uri = _accessor.GetUri(_apiUploadPost);
+			var uri = GetDataUri(_apiUploadPost);
 			var message = new HttpRequestMessage(HttpMethod.Post, uri) { Content = content };
-			return _accessor.Access<PostResult>(message);
-			
+			return Access<PostResult>(message);
+
 		}
 
 		public Task<VerifyResult> UploadVerify(string filePath, string existingDatasetIdToModify = null)
 		{
-			var parameters = HttpUtility.ParseQueryString(string.Empty);
+			var parameters = new Dictionary<string, string>();
 			parameters.Add("filePath", filePath);
 			parameters.Add("datasetId", existingDatasetIdToModify);
-			return _accessor.Get<VerifyResult>(_apiUploadVerify, parameters);
+			return Get<VerifyResult>(_apiUploadVerify, parameters);
 		}
 
 		public Task<UploadResult> UploadSubmit(DatasetUpload upload)
 		{
-			return _accessor.Post<DatasetUpload, UploadResult>(_apiUploadSave, upload);
+			return Post<DatasetUpload, UploadResult>(_apiUploadSave, upload);
 		}
 
 		public Task<UploadResult> UploadStatus(int uploadId)
 		{
-			var parameters = HttpUtility.ParseQueryString(string.Empty);
+			var parameters = new Dictionary<string, string>();
 			parameters.Add("id", uploadId.ToString());
-			return _accessor.Get<UploadResult>(_apiUploadStatus, parameters);
+			return Get<UploadResult>(_apiUploadStatus, parameters);
 		}
 
 		public Task<VerifyDatasetResult> VerifyDataset(string id, DateTime? publicationDate = null, string source = null, string refUrl = null)
@@ -140,7 +248,7 @@ namespace Knoema
 				Source = source,
 				RefUrl = refUrl
 			};
-			return _accessor.Post<VerifyDatasetRequest, VerifyDatasetResult>(_apiMetaVerifyDataset, request);
+			return Post<VerifyDatasetRequest, VerifyDatasetResult>(_apiMetaVerifyDataset, request);
 		}
 
 		public Task<UploadResult> UploadDataset(string filename, string datasetName)
@@ -171,7 +279,20 @@ namespace Knoema
 
 		public Task<DateRange> GetDatasetDateRange(string datasetId)
 		{
-			return _accessor.Get<DateRange>(string.Format(_apiMetaDatasetDateRange, datasetId));
+			return Get<DateRange>(string.Format(_apiMetaDatasetDateRange, datasetId));
+		}
+
+		public async Task<SearchTimeSeriesResponse> Search(string searchText, SearchScope scope, int count, int version)
+		{
+			var parameters = new Dictionary<string, string>();
+			parameters.Add("query", HttpUtility.UrlEncode(searchText.Trim()));
+			parameters.Add("scope", SearchScopeUtil.GetString(scope));
+			parameters.Add("count", count.ToString());
+			parameters.Add("version", version.ToString());
+
+			var searchHost = await GetSearchHost();
+			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(searchHost, _token, _apiSearch, parameters));
+			return await Access<SearchTimeSeriesResponse>(message);
 		}
 	}
 }

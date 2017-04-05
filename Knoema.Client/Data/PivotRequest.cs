@@ -2,28 +2,20 @@
 
 namespace Knoema.Data
 {
-	public abstract class PivotRequestBase<T>
+	public class PivotRequest
 	{
-		public List<T> Header { get; set; }
-		public List<PivotRequestItem> Stub { get; set; }
-		public List<PivotRequestItem> Filter { get; set; }
+		public IList<PivotRequestItem> Header { get; set; }
+		public IList<PivotRequestItem> Stub { get; set; }
+		public IList<PivotRequestItem> Filter { get; set; }
+		public IList<string> Frequencies { get; set; }
 		public string Dataset { get; set; }
-		public List<string> Frequencies { get; set; }
 
-		protected PivotRequestBase()
+		public PivotRequest()
 		{
-			Header = new List<T>();
+			Header = new List<PivotRequestItem>();
 			Stub = new List<PivotRequestItem>();
 			Filter = new List<PivotRequestItem>();
 			Frequencies = new List<string>();
 		}
-	}
-
-	public class PivotRequest : PivotRequestBase<PivotRequestItem>
-	{
-	}
-
-	public class PivotRequestWithAdvancedHeader : PivotRequestBase<PivotRequestTimeItem>
-	{
 	}
 }

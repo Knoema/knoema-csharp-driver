@@ -4,20 +4,19 @@ using Newtonsoft.Json;
 
 namespace Knoema.Data
 {
-	public class FlatResponseWithTokenData
+	public abstract class TimeSeriesRawData
 	{
 		[JsonExtensionData]
 		public Dictionary<string, object> Dimensions { get; set; }
-		public List<AttributesInFlatDataset> Data { get; set; }
 
-		public List<FlatDatasetDimension> GetElement()
+		public IEnumerable<DimensionItem> GetDimensions()
 		{
 			return Dimensions.Select(pair =>
 			{
-				var result = JsonConvert.DeserializeObject<FlatDatasetDimension>(pair.Value.ToString());
+				var result = JsonConvert.DeserializeObject<DimensionItem>(pair.Value.ToString());
 				result.DimensionId = pair.Key;
 				return result;
-			}).ToList();
+			});
 		}
 	}
 }

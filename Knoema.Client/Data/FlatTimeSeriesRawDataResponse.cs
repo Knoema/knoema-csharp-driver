@@ -2,9 +2,9 @@
 
 namespace Knoema.Data
 {
-	public class PivotResponseWithToken
+	public class FlatTimeSeriesRawDataResponse
 	{
 		public string ContinuationToken { get; set; }
-		public List<PivotResponseWithTokenData> Data { get; set; }
+		public List<FlatTimeSeriesRawData> Data { get; set; }
 	}
 }

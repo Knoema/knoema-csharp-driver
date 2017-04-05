@@ -7,7 +7,7 @@ namespace Knoema.Upload
 		public int Id { get; set; }
 		public string DatasetId { get; set; }
 		public string Status { get; set; }
-		public List<string> Errors { get; set; }
+		public IList<string> Errors { get; set; }
 		public string Url { get; set; }
 		public DatasetUploadReport Report { get; set; }
 

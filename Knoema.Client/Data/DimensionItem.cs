@@ -3,13 +3,12 @@ using Newtonsoft.Json;
 
 namespace Knoema.Data
 {
-	public class PivotDatasetDimension
+	public class DimensionItem
 	{
 		public string DimensionId { get; set; }
 		public int Key { get; set; }
 		public string Name { get; set; }
-
 		[JsonExtensionData]
-		public Dictionary<string, object> Fields { get; set; }
+		public Dictionary<string, object> MetadataFields { get; set; }
 	}
 }
