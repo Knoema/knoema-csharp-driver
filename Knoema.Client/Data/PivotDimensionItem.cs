@@ -6,7 +6,7 @@ namespace Knoema.Data
 	public class PivotDimensionItem
 	{
 		public string DimensionId { get; set; }
-		public List<Object> Members { get; private set; }
+		public IList<object> Members { get; private set; }
 
 		public PivotDimensionItem()
 		{

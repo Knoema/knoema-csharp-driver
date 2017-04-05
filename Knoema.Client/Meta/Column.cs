@@ -1,5 +1,4 @@
-﻿
-namespace Knoema.Meta
+﻿namespace Knoema.Meta
 {
 	public class Column
 	{
