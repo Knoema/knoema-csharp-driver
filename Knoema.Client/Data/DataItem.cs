@@ -10,7 +10,7 @@ namespace Knoema.Data
 		[JsonExtensionData]
 		private Dictionary<string, object> _fields;
 
-		public IList<DataItemValue> Values { get; set; }
+		public List<DataItemValue> Values { get; set; }
 
 		[OnDeserialized]
 		internal void OnDeserialized(StreamingContext context)

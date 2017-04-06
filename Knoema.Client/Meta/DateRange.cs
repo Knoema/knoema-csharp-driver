@@ -8,7 +8,7 @@ namespace Knoema.Meta
 		public int Calendar { get; set; }
 		public DateTime StartDate { get; set; }
 		public DateTime EndDate { get; set; }
-		public IList<char> Frequencies { get; set; }
+		public List<char> Frequencies { get; set; }
 
 		public DateRange()
 		{

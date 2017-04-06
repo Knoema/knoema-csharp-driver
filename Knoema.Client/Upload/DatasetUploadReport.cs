@@ -13,7 +13,7 @@ namespace Knoema.Upload
 
 		[Obsolete("Use MetadataChanges.", false)]
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-		public IList<UploadedDimensionDetails> MetaDataDetails { get; set; }
+		public List<UploadedDimensionDetails> MetaDataDetails { get; set; }
 
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public MetadataChanges MetadataChanges { get; set; }
@@ -21,7 +21,7 @@ namespace Knoema.Upload
 		public int TotalRecords { get; set; }
 		public bool IsFlatDataset { get; set; }
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-		public IList<string> UploadComments { get; set; }
+		public List<string> UploadComments { get; set; }
 		public bool IsKnoxDataOverwritten { get; set; }
 	}
 }

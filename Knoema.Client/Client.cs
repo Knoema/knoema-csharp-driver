@@ -18,8 +18,6 @@ namespace Knoema
 {
 	public class Client
 	{
-		private const string _clientId = "EZj54KGFo3rzIvnLczrElvAitEyU28DGw9R73tif";
-
 		private const string _apiDataPivot = "/api/1.0/data/pivot/";
 		private const string _api11DataPivot = "/api/1.1/data/pivot/";
 		private const string _apiDataMultipivot = "/api/1.0/data/multipivot";
@@ -84,9 +82,7 @@ namespace Knoema
 		{
 			if (_searchHost == null)
 			{
-				var parameters = new Dictionary<string, string>();
-				parameters.Add("client_id", _clientId);
-				var response = await Get<ConfigResponse>(_apiSearchConfig, parameters);
+				var response = await Get<ConfigResponse>(_apiSearchConfig);
 				_searchHost = response.SearchHost;
 			}
 			return _searchHost;
@@ -186,7 +182,7 @@ namespace Knoema
 			return Post<PivotRequest, RegularTimeSeriesRawDataResponse>(_apiDataRaw, pivot);
 		}
 
-		public Task<RegularTimeSeriesRawDataResponse> GetDataContinuation(string token)
+		public Task<RegularTimeSeriesRawDataResponse> GetDataStreaming(string token)
 		{
 			var parameters = new Dictionary<string, string>();
 			parameters.Add("continuationToken", token);
@@ -198,7 +194,7 @@ namespace Knoema
 			return Post<PivotRequest, FlatTimeSeriesRawDataResponse>(_apiDataRaw, pivot);
 		}
 
-		public Task<FlatTimeSeriesRawDataResponse> GetFlatDataContinuation(string token)
+		public Task<FlatTimeSeriesRawDataResponse> GetFlatDataStreaming(string token)
 		{
 			var parameters = new Dictionary<string, string>();
 			parameters.Add("continuationToken", token);
@@ -223,7 +219,8 @@ namespace Knoema
 		{
 			var parameters = new Dictionary<string, string>();
 			parameters.Add("filePath", filePath);
-			parameters.Add("datasetId", existingDatasetIdToModify);
+			if (existingDatasetIdToModify != null)
+				parameters.Add("datasetId", existingDatasetIdToModify);
 			return Get<VerifyResult>(_apiUploadVerify, parameters);
 		}
 

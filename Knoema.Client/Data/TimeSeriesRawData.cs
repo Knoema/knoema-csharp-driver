@@ -10,7 +10,7 @@ namespace Knoema.Data
 		[JsonExtensionData]
 		private Dictionary<string, object> _dimensions;
 
-		public IList<DimensionItem> Dimensions { get; set; }
+		public List<DimensionItem> Dimensions { get; set; }
 
 		[OnDeserialized]
 		internal void OnDeserialized(StreamingContext context)

@@ -8,6 +8,6 @@ namespace Knoema.Search
 		public string Id { get; set; }
 		public string Name { get; set; }
 		public string IdFromName { get; set; }
-		public IList<string> Parents { get; set; }
+		public List<string> Parents { get; set; }
 	}
 }

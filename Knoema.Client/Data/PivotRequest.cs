@@ -4,10 +4,10 @@ namespace Knoema.Data
 {
 	public class PivotRequest
 	{
-		public IList<PivotRequestItem> Header { get; set; }
-		public IList<PivotRequestItem> Stub { get; set; }
-		public IList<PivotRequestItem> Filter { get; set; }
-		public IList<string> Frequencies { get; set; }
+		public List<PivotRequestItem> Header { get; set; }
+		public List<PivotRequestItem> Stub { get; set; }
+		public List<PivotRequestItem> Filter { get; set; }
+		public List<string> Frequencies { get; set; }
 		public string Dataset { get; set; }
 
 		public PivotRequest()

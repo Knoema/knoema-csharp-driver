@@ -7,10 +7,10 @@ namespace Knoema.Search
 	[Flags]
 	public enum SearchScope
 	{
-		Timeseries = 1,
-		Atlas = 2,
-		NamedEntity = 4,
-		Semantic = 8
+		Timeseries = 0x8,
+		NamedEntity = 0x100,
+		Atlas = 0x200,
+		Semantic = 0x800
 	}
 
 	static class SearchScopeUtil
