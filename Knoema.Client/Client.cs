@@ -88,7 +88,9 @@ namespace Knoema
 			{
 				Host = host,
 				Path = path,
-				Query = parameters != null ? string.Join("&", parameters.Select(pair => string.Format("{0}={1}", pair.Key, pair.Value))) : string.Empty
+				Query = parameters != null ?
+					string.Join("&", parameters.Select(pair => string.Format("{0}={1}", pair.Key, HttpUtility.UrlEncode(pair.Value)))) :
+					string.Empty
 			};
 			return builder.Uri;
 		}
@@ -226,7 +228,7 @@ namespace Knoema
 
 		public Task<VerifyDatasetResult> VerifyDataset(string id, DateTime? publicationDate = null, string source = null, string refUrl = null)
 		{
-			var request = new VerifyDatasetRequest()
+			var request = new VerifyDatasetRequest
 			{
 				Id = id,
 				PublicationDate = publicationDate,
@@ -270,7 +272,7 @@ namespace Knoema
 		public async Task<SearchTimeSeriesResponse> Search(string searchText, SearchScope scope, int count, int version)
 		{
 			var parameters = new Dictionary<string, string>();
-			parameters.Add("query", HttpUtility.UrlEncode(searchText.Trim()));
+			parameters.Add("query", searchText.Trim());
 			parameters.Add("scope", scope.GetString());
 			parameters.Add("count", count.ToString());
 			parameters.Add("version", version.ToString());
