@@ -40,8 +40,6 @@ namespace Knoema
 		private readonly string _token;
 		private readonly HttpClient _httpClient;
 
-		private string _searchHost;
-
 		private const string _authProtoVersion = "1.2";
 		private const int _httpClientTimeout = 300 * 1000;
 
@@ -78,16 +76,6 @@ namespace Knoema
 			_appSecret = appSecret;
 		}
 
-		private async Task<string> GetSearchHost()
-		{
-			if (_searchHost == null)
-			{
-				var response = await Get<ConfigResponse>(_apiSearchConfig);
-				_searchHost = response.SearchHost;
-			}
-			return _searchHost;
-		}
-
 		private static Uri GetUri(string host, string token, string path, Dictionary<string, string> parameters = null)
 		{
 			if (!string.IsNullOrEmpty(token))
@@ -110,25 +98,25 @@ namespace Knoema
 			return GetUri(_host, _token, path, parameters);
 		}
 
-		public Task<T> Get<T>(string path, Dictionary<string, string> parameters = null)
+		public Task<T> ApiGet<T>(string path, Dictionary<string, string> parameters = null)
 		{
 			var message = new HttpRequestMessage(HttpMethod.Get, GetDataUri(path, parameters));
-			return Access<T>(message);
+			return ApiAccess<T>(message);
 		}
 
-		public Task<TResponse> Post<TRequest, TResponse>(string path, TRequest request, Dictionary<string, string> parameters = null)
+		public Task<TResponse> ApiPost<TRequest, TResponse>(string path, TRequest request, Dictionary<string, string> parameters = null)
 		{
 			var message = new HttpRequestMessage(HttpMethod.Post, GetDataUri(path, parameters))
 			{
 				Content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json")
 			};
-			return Access<TResponse>(message);
+			return ApiAccess<TResponse>(message);
 		}
 
-		public async Task<TResponse> Access<TResponse>(HttpRequestMessage message)
+		public async Task<TResponse> ApiAccess<TResponse>(HttpRequestMessage message)
 		{
 			if (!string.IsNullOrEmpty(_appId) && !string.IsNullOrEmpty(_appSecret))
-				message.Headers.Add("Authorization", GetAuthorizationValue(_appId, _appSecret));
+				message.Headers.Add("Authorization", GetAuthorizationHeaderValue(_appId, _appSecret));
 
 			var sendAsyncResp = await _httpClient.SendAsync(message);
 			sendAsyncResp.EnsureSuccessStatusCode();
@@ -136,7 +124,7 @@ namespace Knoema
 			return JsonConvert.DeserializeObject<TResponse>(strRead);
 		}
 
-		private static string GetAuthorizationValue(string appId, string appSecret)
+		private static string GetAuthorizationHeaderValue(string appId, string appSecret)
 		{
 			return string.Format("Knoema {0}:{1}:{2}", appId,
 					Convert.ToBase64String(new HMACSHA1(Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-HH"))).ComputeHash(Encoding.UTF8.GetBytes(appSecret))),
@@ -145,20 +133,20 @@ namespace Knoema
 
 		public Task<Dataset> GetDataset(string datasetId)
 		{
-			return Get<Dataset>(string.Format(_apiMetaDataset, datasetId));
+			return ApiGet<Dataset>(string.Format(_apiMetaDataset, datasetId));
 		}
 
 		public Task<Dimension> GetDatasetDimension(string datasetId, string dimensionId)
 		{
-			return Get<Dimension>(string.Format(_apiMetaDatasetDimension, datasetId, dimensionId));
+			return ApiGet<Dimension>(string.Format(_apiMetaDatasetDimension, datasetId, dimensionId));
 		}
 
 		public Task<List<Dataset>> ListDatasets(string source = null, string topic = null, string region = null)
 		{
 			if (string.IsNullOrEmpty(source) && string.IsNullOrEmpty(topic) && string.IsNullOrEmpty(region))
-				return Get<List<Dataset>>(_apiMetaDatasetList);
+				return ApiGet<List<Dataset>>(_apiMetaDatasetList);
 
-			return Post<Dictionary<string, string>, List<Dataset>>(_apiMetaDatasetList,
+			return ApiPost<Dictionary<string, string>, List<Dataset>>(_apiMetaDatasetList,
 				new Dictionary<string, string>()
 					{
 						{"source", source},
@@ -169,36 +157,36 @@ namespace Knoema
 
 		public Task<PivotResponse> GetData(PivotRequest pivot)
 		{
-			return Post<PivotRequest, PivotResponse>(_apiDataPivot, pivot);
+			return ApiPost<PivotRequest, PivotResponse>(_apiDataPivot, pivot);
 		}
 
 		public Task<List<PivotResponse>> GetData(List<PivotRequest> pivots)
 		{
-			return Post<List<PivotRequest>, List<PivotResponse>>(_apiDataMultipivot, pivots);
+			return ApiPost<List<PivotRequest>, List<PivotResponse>>(_apiDataMultipivot, pivots);
 		}
 
 		public Task<RegularTimeSeriesRawDataResponse> GetDataBegin(PivotRequest pivot)
 		{
-			return Post<PivotRequest, RegularTimeSeriesRawDataResponse>(_apiDataRaw, pivot);
+			return ApiPost<PivotRequest, RegularTimeSeriesRawDataResponse>(_apiDataRaw, pivot);
 		}
 
 		public Task<RegularTimeSeriesRawDataResponse> GetDataStreaming(string token)
 		{
 			var parameters = new Dictionary<string, string>();
 			parameters.Add("continuationToken", token);
-			return Get<RegularTimeSeriesRawDataResponse>(_apiDataRaw, parameters);
+			return ApiGet<RegularTimeSeriesRawDataResponse>(_apiDataRaw, parameters);
 		}
 
 		public Task<FlatTimeSeriesRawDataResponse> GetFlatDataBegin(PivotRequest pivot)
 		{
-			return Post<PivotRequest, FlatTimeSeriesRawDataResponse>(_apiDataRaw, pivot);
+			return ApiPost<PivotRequest, FlatTimeSeriesRawDataResponse>(_apiDataRaw, pivot);
 		}
 
 		public Task<FlatTimeSeriesRawDataResponse> GetFlatDataStreaming(string token)
 		{
 			var parameters = new Dictionary<string, string>();
 			parameters.Add("continuationToken", token);
-			return Get<FlatTimeSeriesRawDataResponse>(_apiDataRaw, parameters);
+			return ApiGet<FlatTimeSeriesRawDataResponse>(_apiDataRaw, parameters);
 		}
 
 		public Task<PostResult> UploadPost(string fileName)
@@ -211,7 +199,7 @@ namespace Knoema
 
 			var uri = GetDataUri(_apiUploadPost);
 			var message = new HttpRequestMessage(HttpMethod.Post, uri) { Content = content };
-			return Access<PostResult>(message);
+			return ApiAccess<PostResult>(message);
 
 		}
 
@@ -221,19 +209,19 @@ namespace Knoema
 			parameters.Add("filePath", filePath);
 			if (existingDatasetIdToModify != null)
 				parameters.Add("datasetId", existingDatasetIdToModify);
-			return Get<VerifyResult>(_apiUploadVerify, parameters);
+			return ApiGet<VerifyResult>(_apiUploadVerify, parameters);
 		}
 
 		public Task<UploadResult> UploadSubmit(DatasetUpload upload)
 		{
-			return Post<DatasetUpload, UploadResult>(_apiUploadSave, upload);
+			return ApiPost<DatasetUpload, UploadResult>(_apiUploadSave, upload);
 		}
 
 		public Task<UploadResult> UploadStatus(int uploadId)
 		{
 			var parameters = new Dictionary<string, string>();
 			parameters.Add("id", uploadId.ToString());
-			return Get<UploadResult>(_apiUploadStatus, parameters);
+			return ApiGet<UploadResult>(_apiUploadStatus, parameters);
 		}
 
 		public Task<VerifyDatasetResult> VerifyDataset(string id, DateTime? publicationDate = null, string source = null, string refUrl = null)
@@ -245,7 +233,7 @@ namespace Knoema
 				Source = source,
 				RefUrl = refUrl
 			};
-			return Post<VerifyDatasetRequest, VerifyDatasetResult>(_apiMetaVerifyDataset, request);
+			return ApiPost<VerifyDatasetRequest, VerifyDatasetResult>(_apiMetaVerifyDataset, request);
 		}
 
 		public Task<UploadResult> UploadDataset(string filename, string datasetName)
@@ -276,7 +264,7 @@ namespace Knoema
 
 		public Task<DateRange> GetDatasetDateRange(string datasetId)
 		{
-			return Get<DateRange>(string.Format(_apiMetaDatasetDateRange, datasetId));
+			return ApiGet<DateRange>(string.Format(_apiMetaDatasetDateRange, datasetId));
 		}
 
 		public async Task<SearchTimeSeriesResponse> Search(string searchText, SearchScope scope, int count, int version)
@@ -287,9 +275,10 @@ namespace Knoema
 			parameters.Add("count", count.ToString());
 			parameters.Add("version", version.ToString());
 
-			var searchHost = await GetSearchHost();
+			var configResponse = await ApiGet<ConfigResponse>(_apiSearchConfig);
+			var searchHost = configResponse.SearchHost;
 			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(searchHost, _token, _apiSearch, parameters));
-			return await Access<SearchTimeSeriesResponse>(message);
+			return await ApiAccess<SearchTimeSeriesResponse>(message);
 		}
 	}
 }
