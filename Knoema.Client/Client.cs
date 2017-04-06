@@ -135,6 +135,7 @@ namespace Knoema
 				message.Headers.Add("Authorization", GetAuthorizationValue(_appId, _appSecret));
 
 			var sendAsyncResp = await _httpClient.SendAsync(message);
+			sendAsyncResp.EnsureSuccessStatusCode();
 			var strRead = await sendAsyncResp.Content.ReadAsStringAsync();
 			return JsonConvert.DeserializeObject<TResponse>(strRead);
 		}
@@ -285,7 +286,7 @@ namespace Knoema
 		{
 			var parameters = new Dictionary<string, string>();
 			parameters.Add("query", HttpUtility.UrlEncode(searchText.Trim()));
-			parameters.Add("scope", SearchScopeUtil.GetString(scope));
+			parameters.Add("scope", scope.GetString());
 			parameters.Add("count", count.ToString());
 			parameters.Add("version", version.ToString());
 

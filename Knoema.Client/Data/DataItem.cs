@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using Newtonsoft.Json;
 
 namespace Knoema.Data
@@ -7,11 +8,14 @@ namespace Knoema.Data
 	public class DataItem
 	{
 		[JsonExtensionData]
-		public Dictionary<string, object> Fields { get; set; }
+		private Dictionary<string, object> _fields;
 
-		public IEnumerable<DataItemValue> GetDetails()
+		public IList<DataItemValue> Values { get; set; }
+
+		[OnDeserialized]
+		internal void OnDeserialized(StreamingContext context)
 		{
-			return Fields.Select(pair => ParseItem(pair));
+			Values = _fields.Select(ParseItem).ToList();
 		}
 
 		private DataItemValue ParseItem(KeyValuePair<string, object> pair)

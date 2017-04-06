@@ -25,7 +25,7 @@ namespace Knoema.Search
 			{ SearchScope.Semantic, "semantic" },
 		};
 
-		public static string GetString(SearchScope scope)
+		public static string GetString(this SearchScope scope)
 		{
 			var singleScopeList = new List<SearchScope>();
 
