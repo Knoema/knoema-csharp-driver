@@ -86,9 +86,8 @@ namespace Knoema
 					parameters = new Dictionary<string, string>();
 				parameters.Add("access_token", token);
 			}
-			var builder = new UriBuilder
+			var builder = new UriBuilder(Uri.UriSchemeHttp, host)
 			{
-				Host = host,
 				Path = path,
 				Query = parameters != null ?
 					string.Join("&", parameters.Select(pair => string.Format("{0}={1}", pair.Key, HttpUtility.UrlEncode(pair.Value)))) :
