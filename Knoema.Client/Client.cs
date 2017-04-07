@@ -102,13 +102,13 @@ namespace Knoema
 			return GetUri(_host, _token, path, parameters);
 		}
 
-		public Task<T> ApiGet<T>(string path, Dictionary<string, string> parameters = null)
+		private Task<T> ApiGet<T>(string path, Dictionary<string, string> parameters = null)
 		{
 			var message = new HttpRequestMessage(HttpMethod.Get, GetDataUri(path, parameters));
 			return ApiAccess<T>(message);
 		}
 
-		public Task<TResponse> ApiPost<TRequest, TResponse>(string path, TRequest request, Dictionary<string, string> parameters = null)
+		private Task<TResponse> ApiPost<TRequest, TResponse>(string path, TRequest request, Dictionary<string, string> parameters = null)
 		{
 			var message = new HttpRequestMessage(HttpMethod.Post, GetDataUri(path, parameters))
 			{
@@ -117,7 +117,7 @@ namespace Knoema
 			return ApiAccess<TResponse>(message);
 		}
 
-		public async Task<TResponse> ApiAccess<TResponse>(HttpRequestMessage message)
+		private async Task<TResponse> ApiAccess<TResponse>(HttpRequestMessage message)
 		{
 			if (!string.IsNullOrEmpty(_appId) && !string.IsNullOrEmpty(_appSecret))
 				message.Headers.Add("Authorization", GetAuthorizationHeaderValue(_appId, _appSecret));
