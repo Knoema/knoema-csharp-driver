@@ -272,13 +272,15 @@ namespace Knoema
 			return ApiGet<DateRange>(string.Format(_apiMetaDatasetDateRange, datasetId));
 		}
 
-		public async Task<SearchTimeSeriesResponse> Search(string searchText, SearchScope scope, int count, int version)
+		public async Task<SearchTimeSeriesResponse> Search(string searchText, SearchScope scope, int count, int version, string lang = null)
 		{
 			var parameters = new Dictionary<string, string>();
 			parameters.Add("query", searchText.Trim());
 			parameters.Add("scope", scope.GetString());
 			parameters.Add("count", count.ToString());
 			parameters.Add("version", version.ToString());
+			if (lang != null)
+				parameters.Add("lang", lang);
 
 			if (_searchHost == null)
 			{
