@@ -39,6 +39,8 @@ namespace Knoema
 		private readonly string _appSecret;
 		private readonly string _token;
 
+		private string _searchHost;
+
 		private const string _authProtoVersion = "1.2";
 		private const int _httpClientTimeout = 300 * 1000;
 
@@ -278,9 +280,12 @@ namespace Knoema
 			parameters.Add("count", count.ToString());
 			parameters.Add("version", version.ToString());
 
-			var configResponse = await ApiGet<ConfigResponse>(_apiSearchConfig);
-			var searchHost = configResponse.SearchHost;
-			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(searchHost, _token, _apiSearch, parameters));
+			if (_searchHost == null)
+			{
+				var configResponse = await ApiGet<ConfigResponse>(_apiSearchConfig);
+				_searchHost = configResponse.SearchHost;
+			}
+			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, _token, _apiSearch, parameters));
 			return await ApiAccess<SearchTimeSeriesResponse>(message);
 		}
 	}
