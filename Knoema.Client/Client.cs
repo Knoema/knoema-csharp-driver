@@ -38,7 +38,6 @@ namespace Knoema
 		private readonly string _appId;
 		private readonly string _appSecret;
 		private readonly string _token;
-		private readonly HttpClient _httpClient;
 
 		private const string _authProtoVersion = "1.2";
 		private const int _httpClientTimeout = 300 * 1000;
@@ -49,9 +48,6 @@ namespace Knoema
 				throw new ArgumentNullException("host");
 
 			_host = host;
-
-			var clientHandler = new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
-			_httpClient = new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(_httpClientTimeout) };
 		}
 
 		public Client(string host, string token)
@@ -74,6 +70,12 @@ namespace Knoema
 
 			_appId = appId;
 			_appSecret = appSecret;
+		}
+
+		private HttpClient GetApiClient()
+		{
+			var clientHandler = new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
+			return new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(_httpClientTimeout) };
 		}
 
 		private static Uri GetUri(string host, string token, string path, Dictionary<string, string> parameters = null)
@@ -120,7 +122,7 @@ namespace Knoema
 			if (!string.IsNullOrEmpty(_appId) && !string.IsNullOrEmpty(_appSecret))
 				message.Headers.Add("Authorization", GetAuthorizationHeaderValue(_appId, _appSecret));
 
-			var sendAsyncResp = await _httpClient.SendAsync(message);
+			var sendAsyncResp = await GetApiClient().SendAsync(message);
 			sendAsyncResp.EnsureSuccessStatusCode();
 			var strRead = await sendAsyncResp.Content.ReadAsStringAsync();
 			return JsonConvert.DeserializeObject<TResponse>(strRead);
