@@ -279,6 +279,7 @@ namespace Knoema
 			parameters.Add("scope", scope.GetString());
 			parameters.Add("count", count.ToString());
 			parameters.Add("version", version.ToString());
+			parameters.Add("host", _host);
 			if (lang != null)
 				parameters.Add("lang", lang);
 
