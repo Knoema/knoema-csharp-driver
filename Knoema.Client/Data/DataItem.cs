@@ -35,8 +35,7 @@ namespace Knoema.Data
 				result.Type = DataItemType.Measure;
 				return result;
 			}
-			else
-				return new DataItemDetail { Name = pair.Key, Value = pair.Value, Type = DataItemType.Detail };
+			return new DataItemDetail { Name = pair.Key, Value = pair.Value, Type = DataItemType.Detail };
 		}
 	}
 }

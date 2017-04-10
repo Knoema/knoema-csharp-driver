@@ -72,6 +72,7 @@
     <Compile Include="Data\PivotResponse.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Search\DatasetDecriptor.cs" />
+    <Compile Include="Search\SearchScopeUtil.cs" />
     <Compile Include="Upload\DimensionChanges.cs" />
     <Compile Include="Upload\MetadataChanges.cs" />
     <Compile Include="Upload\DatasetUpload.cs" />
