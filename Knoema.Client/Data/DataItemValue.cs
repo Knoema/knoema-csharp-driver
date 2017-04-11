@@ -11,6 +11,7 @@ namespace Knoema.Data
 		Measure
 	}
 
+	[JsonConverter(typeof(DataItemValueConverter))]
 	public abstract class DataItemValue
 	{
 		[JsonExtensionData]

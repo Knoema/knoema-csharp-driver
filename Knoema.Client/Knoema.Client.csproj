@@ -51,6 +51,7 @@
     <Compile Include="Client.cs" />
     <Compile Include="ConfigResponse.cs" />
     <Compile Include="Data\DataItem.cs" />
+    <Compile Include="Data\DataItemValueConverter.cs" />
     <Compile Include="Data\DataItemValue.cs" />
     <Compile Include="Data\DimensionItem.cs" />
     <Compile Include="Data\FlatTimeSeriesRawData.cs" />
@@ -58,6 +59,7 @@
     <Compile Include="Data\RegularTimeSeriesRawData.cs" />
     <Compile Include="Data\RegularTimeSeriesRawDataResponse.cs" />
     <Compile Include="Data\TimeSeriesRawData.cs" />
+    <Compile Include="JsonCreationConverter.cs" />
     <Compile Include="Meta\Column.cs" />
     <Compile Include="Meta\Dataset.cs" />
     <Compile Include="Meta\DateRange.cs" />

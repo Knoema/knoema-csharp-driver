@@ -2,13 +2,14 @@
 using System.Linq;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Knoema.Data
 {
 	public class DataItem
 	{
 		[JsonExtensionData]
-		private Dictionary<string, object> _fields;
+		private Dictionary<string, JToken> _fields;
 
 		public List<DataItemValue> Values { get; set; }
 
@@ -18,24 +19,14 @@ namespace Knoema.Data
 			Values = _fields.Select(ParseItem).ToList();
 		}
 
-		private DataItemValue ParseItem(KeyValuePair<string, object> pair)
+		private DataItemValue ParseItem(KeyValuePair<string, JToken> pair)
 		{
-			var str = pair.Value.ToString();
-			if (str.Contains("date") && str.Contains("frequency"))
-			{
-				var result = JsonConvert.DeserializeObject<DataItemTime>(str);
-				result.Name = pair.Key;
-				result.Type = DataItemType.Time;
-				return result;
-			}
-			else if (str.Contains("value") && str.Contains("unit"))
-			{
-				var result = JsonConvert.DeserializeObject<DataItemMeasure>(str);
-				result.Name = pair.Key;
-				result.Type = DataItemType.Measure;
-				return result;
-			}
-			return new DataItemDetail { Name = pair.Key, Value = pair.Value, Type = DataItemType.Detail };
+			if (pair.Value.Type != JTokenType.Object)
+				return new DataItemDetail { Type = DataItemType.Detail, Name = pair.Key, Value = pair.Value };
+
+			var result = pair.Value.ToObject<DataItemValue>();
+			result.Name = pair.Key;
+			return result;
 		}
 	}
 }
