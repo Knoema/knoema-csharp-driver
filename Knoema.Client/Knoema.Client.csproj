@@ -59,7 +59,6 @@
     <Compile Include="Data\RegularTimeSeriesRawData.cs" />
     <Compile Include="Data\RegularTimeSeriesRawDataResponse.cs" />
     <Compile Include="Data\TimeSeriesRawData.cs" />
-    <Compile Include="JsonCreationConverter.cs" />
     <Compile Include="Meta\Column.cs" />
     <Compile Include="Meta\Dataset.cs" />
     <Compile Include="Meta\DateRange.cs" />
