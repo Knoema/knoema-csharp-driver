@@ -2,13 +2,14 @@
 using System.Linq;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Knoema.Data
 {
 	public abstract class TimeSeriesRawData
 	{
 		[JsonExtensionData]
-		private Dictionary<string, DimensionItem> _dimensions;
+		private Dictionary<string, JToken> _dimensions;
 
 		public List<DimensionItem> Dimensions { get; set; }
 
@@ -17,10 +18,11 @@ namespace Knoema.Data
 		{
 			Dimensions = _dimensions.Select(pair => 
 			{
-				var value = pair.Value;
+				var value = pair.Value.ToObject<DimensionItem>();
 				value.DimensionId = pair.Key;
 				return value;
 			}).ToList();
+			_dimensions = null;
 		}
 	}
 }
