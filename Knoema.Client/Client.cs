@@ -19,22 +19,6 @@ namespace Knoema
 {
 	public class Client
 	{
-		private const string _apiDataPivot = "/api/1.0/data/pivot/";
-		private const string _api11DataPivot = "/api/1.1/data/pivot/";
-		private const string _apiDataMultipivot = "/api/1.0/data/multipivot";
-		private const string _apiMetaDataset = "/api/1.0/meta/dataset/{0}";
-		private const string _apiMetaDatasetList = "/api/1.0/meta/dataset";
-		private const string _apiMetaDatasetDimension = "/api/1.0/meta/dataset/{0}/dimension/{1}";
-		private const string _apiMetaDatasetDateRange = "/api/1.0/meta/dataset/{0}/daterange";
-		private const string _apiMetaVerifyDataset = "/api/1.0/meta/verifydataset";
-		private const string _apiUploadPost = "/api/1.0/upload/post";
-		private const string _apiUploadVerify = "/api/1.0/upload/verify";
-		private const string _apiUploadSave = "/api/1.0/upload/save";
-		private const string _apiUploadStatus = "/api/1.0/upload/status";
-		private const string _apiDataRaw = "/api/1.0/data/raw/";
-		private const string _apiSearch = "/api/1.0/search";
-		private const string _apiSearchConfig = "/api/1.0/search/config";
-
 		private readonly string _host;
 		private readonly string _appId;
 		private readonly string _appSecret;
@@ -81,11 +65,6 @@ namespace Knoema
 			_appSecret = appSecret;
 		}
 
-		//private HttpClient GetApiClient()
-		//{
-		//	var clientHandler = new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
-		//	return new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(_httpClientTimeout) };
-		//}
 		private HttpClient GetApiClient()
 		{
 			var clientHandler = new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
@@ -102,29 +81,6 @@ namespace Knoema
 				);
 
 			return client;
-		}
-
-		private static Uri GetUri(string host, string token, string path, Dictionary<string, string> parameters = null)
-		{
-			if (!string.IsNullOrEmpty(token))
-			{
-				if (parameters == null)
-					parameters = new Dictionary<string, string>();
-				parameters.Add("access_token", token);
-			}
-			var builder = new UriBuilder(Uri.UriSchemeHttp, host)
-			{
-				Path = path,
-				Query = parameters != null ?
-					string.Join("&", parameters.Select(pair => string.Format("{0}={1}", pair.Key, HttpUtility.UrlEncode(pair.Value)))) :
-					string.Empty
-			};
-			return builder.Uri;
-		}
-
-		private Uri GetDataUri(string path, Dictionary<string, string> parameters = null)
-		{
-			return GetUri(_host, _token, path, parameters);
 		}
 
 		private async Task<T> ApiGet<T>(string path, string query = null)
@@ -283,7 +239,7 @@ namespace Knoema
 
 		public Task<DateRange> GetDatasetDateRange(string datasetId)
 		{
-			return ApiGet<DateRange>(string.Format(_apiMetaDatasetDateRange, datasetId));
+			return ApiGet<DateRange>(string.Format("/api/1.0/meta/dataset/{0}/daterange", datasetId));
 		}
 
 		public async Task<SearchTimeSeriesResponse> Search(string searchText, SearchScope scope, int count, int version, string lang = null)
@@ -299,10 +255,10 @@ namespace Knoema
 
 			if (_searchHost == null)
 			{
-				var configResponse = await ApiGet<ConfigResponse>(_apiSearchConfig);
+				var configResponse = await ApiGet<ConfigResponse>("/api/1.0/search/config");
 				_searchHost = configResponse.SearchHost;
 			}
-			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, _token, _apiSearch, parameters)); 
+			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, _token, "/api/1.0/search", parameters));
 
 			if (!string.IsNullOrEmpty(_appId) && !string.IsNullOrEmpty(_appSecret))
 				message.Headers.Add("Authorization", GetAuthorizationHeaderValue(_appId, _appSecret));
@@ -320,5 +276,22 @@ namespace Knoema
 					_authProtoVersion);
 		}
 
+		private static Uri GetUri(string host, string token, string path, Dictionary<string, string> parameters = null)
+		{
+			if (!string.IsNullOrEmpty(token))
+			{
+				if (parameters == null)
+					parameters = new Dictionary<string, string>();
+				parameters.Add("access_token", token);
+			}
+			var builder = new UriBuilder(Uri.UriSchemeHttp, host)
+			{
+				Path = path,
+				Query = parameters != null ?
+					string.Join("&", parameters.Select(pair => string.Format("{0}={1}", pair.Key, HttpUtility.UrlEncode(pair.Value)))) :
+					string.Empty
+			};
+			return builder.Uri;
+		}
 	}
 }
