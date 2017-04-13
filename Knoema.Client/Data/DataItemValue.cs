@@ -15,7 +15,7 @@ namespace Knoema.Data
 	public abstract class DataItemValue
 	{
 		[JsonExtensionData]
-		public Dictionary<string, object> Fields { get; set; }
+		public IDictionary<string, object> Fields { get; set; }
 		public string Name { get; set; }
 		public DataItemType Type { get; set; }
 	}

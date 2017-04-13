@@ -4,6 +4,10 @@ namespace Knoema.Search
 {
 	public class SearchTimeSeriesResponse
 	{
-		public List<TimeSeriesDescriptor> Items { get; set; }
+		public IEnumerable<TimeSeriesDescriptor> Items { get; set; }
+		public IEnumerable<string> MainQueryRegionIds { get; set; }
+		public IEnumerable<RegionLink> MainQueryRegionsList { get; set; }
+		public string QueryRegions { get; set; }
+		public IEnumerable<RegionLink> QueryRegionsList { get; set; }
 	}
 }

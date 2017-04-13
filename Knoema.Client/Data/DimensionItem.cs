@@ -9,6 +9,6 @@ namespace Knoema.Data
 		public int Key { get; set; }
 		public string Name { get; set; }
 		[JsonExtensionData]
-		public Dictionary<string, object> MetadataFields { get; set; }
+		public IDictionary<string, object> MetadataFields { get; set; }
 	}
 }

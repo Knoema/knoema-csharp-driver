@@ -5,6 +5,6 @@ namespace Knoema.Data
 	public class RegularTimeSeriesRawDataResponse
 	{
 		public string ContinuationToken { get; set; }
-		public List<RegularTimeSeriesRawData> Data { get; set; }
+		public IEnumerable<RegularTimeSeriesRawData> Data { get; set; }
 	}
 }

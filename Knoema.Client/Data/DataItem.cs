@@ -9,9 +9,9 @@ namespace Knoema.Data
 	public class DataItem
 	{
 		[JsonExtensionData]
-		private Dictionary<string, JToken> _fields;
+		private IDictionary<string, JToken> _fields;
 
-		public List<DataItemValue> Values { get; set; }
+		public IEnumerable<DataItemValue> Values { get; set; }
 
 		[OnDeserialized]
 		internal void OnDeserialized(StreamingContext context)
@@ -24,7 +24,7 @@ namespace Knoema.Data
 				var value = pair.Value.ToObject<DataItemValue>();
 				value.Name = pair.Key;
 				return value;
-			}).ToList();
+			});
 			_fields = null;
 		}
 	}

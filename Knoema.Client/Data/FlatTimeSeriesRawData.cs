@@ -4,6 +4,6 @@ namespace Knoema.Data
 {
 	public class FlatTimeSeriesRawData : TimeSeriesRawData
 	{
-		public List<DataItem> Data { get; set; }
+		public IEnumerable<DataItem> Data { get; set; }
 	}
 }
