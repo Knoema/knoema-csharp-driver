@@ -8,6 +8,6 @@ namespace Knoema.Meta
 		public virtual string Name { get; set; }
 		public virtual int Level { get; set; }
 		public virtual bool HasData { get; set; }
-		public virtual IDictionary<string, object> Fields { get; set; }
+		public virtual Dictionary<string, object> Fields { get; set; }
 	}
 }

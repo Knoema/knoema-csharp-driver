@@ -26,8 +26,8 @@ namespace Knoema
 
 		private string _searchHost;
 
-		private const string _authProtoVersion = "1.2";
-		private const int _httpClientTimeout = 300 * 1000;
+		private const string AuthProtoVersion = "1.2";
+		private const int HttpClientTimeout = 300 * 1000;
 
 		public Client(string host)
 		{
@@ -68,7 +68,7 @@ namespace Knoema
 		private HttpClient GetApiClient()
 		{
 			var clientHandler = new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
-			var client = new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(_httpClientTimeout) };
+			var client = new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(HttpClientTimeout) };
 
 			if (!string.IsNullOrEmpty(_appId) && !string.IsNullOrEmpty(_appSecret))
 				client.DefaultRequestHeaders.Add("Authorization",
@@ -76,7 +76,7 @@ namespace Knoema
 						Convert.ToBase64String(
 							new HMACSHA1(
 								Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-HH"))).ComputeHash(Encoding.UTF8.GetBytes(_appSecret))),
-								_authProtoVersion
+								AuthProtoVersion
 					)
 				);
 
@@ -273,7 +273,7 @@ namespace Knoema
 		{
 			return string.Format("Knoema {0}:{1}:{2}", appId,
 					Convert.ToBase64String(new HMACSHA1(Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-HH"))).ComputeHash(Encoding.UTF8.GetBytes(appSecret))),
-					_authProtoVersion);
+					AuthProtoVersion);
 		}
 
 		private static Uri GetUri(string host, string token, string path, Dictionary<string, string> parameters = null)
