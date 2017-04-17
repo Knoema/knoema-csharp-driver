@@ -11,5 +11,6 @@ namespace Knoema.Meta
 		public bool IsGeo { get; set; }
 		public string DatasetId { get; set; }
 		public IEnumerable<DimensionMember> Items { get; set; }
+		public IEnumerable<DimensionField> Fields { get; set; }
 	}
 }
