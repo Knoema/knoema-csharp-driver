@@ -22,7 +22,7 @@ namespace Knoema.Data
 
 	public class DataItemDetail : DataItemValue
 	{
-		public object Value { get; set; }
+		public string Value { get; set; }
 	}
 
 	public class DataItemTime : DataItemValue

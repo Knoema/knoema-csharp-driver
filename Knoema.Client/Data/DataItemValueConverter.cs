@@ -59,7 +59,7 @@ namespace Knoema.Data
 				return new DataItemTime { Type = DataItemType.Time };
 			else if (FieldExists("value", jObject) && FieldExists("unit", jObject))
 				return new DataItemMeasure { Type = DataItemType.Measure };
-			return new DataItemDetail { Type = DataItemType.Detail };
+			throw new Exception("Unknown type of data item.");
 		}
 
 		private bool FieldExists(string fieldName, JObject jObject)
