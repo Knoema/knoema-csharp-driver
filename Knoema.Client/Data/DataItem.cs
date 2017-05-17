@@ -19,7 +19,7 @@ namespace Knoema.Data
 			Values = _fields.Select(pair =>
 			{
 				if (pair.Value.Type != JTokenType.Object)
-					return new DataItemDetail { Type = DataItemType.Detail, Name = pair.Key, Value = pair.Value };
+					return new DataItemDetail { Type = DataItemType.Detail, Name = pair.Key, Value = pair.Value == null ? null : pair.Value.ToObject<string>() };
 
 				var value = pair.Value.ToObject<DataItemValue>();
 				value.Name = pair.Key;
