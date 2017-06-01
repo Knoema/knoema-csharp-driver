@@ -174,14 +174,17 @@ namespace Knoema
 			return ApiGet<FlatTimeSeriesRawDataResponse>("/api/1.0/data/raw/", string.Format("continuationToken={0}", token));
 		}
 
-		public Task<PostResult> UploadPost(string fileName)
+		public async Task<PostResult> UploadPost(string fileName)
 		{
 			var fi = new FileInfo(fileName);
 			using (var fs = fi.OpenRead())
 			{
 				var form = new MultipartFormDataContent();
-				form.Add(new StreamContent(fs), "\"file\"", "\"" + fi.Name + "\"");
-				return ApiPost<PostResult>("/api/1.0/upload/post", form);
+				using (var streamContent = new StreamContent(fs))
+				{
+					form.Add(streamContent, "\"file\"", "\"" + fi.Name + "\"");
+					return await ApiPost<PostResult>("/api/1.0/upload/post", form);
+				}
 			}
 		}
 
