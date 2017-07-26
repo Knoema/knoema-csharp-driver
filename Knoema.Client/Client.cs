@@ -20,8 +20,8 @@ namespace Knoema
 	public class Client
 	{
 		private readonly string _host;
-		private readonly string _appId;
-		private readonly string _appSecret;
+		private readonly string _clientId;
+		private readonly string _clientSecret;
 		private readonly string _token;
 
 		private string _searchHost;
@@ -49,20 +49,20 @@ namespace Knoema
 			_token = token;
 		}
 
-		public Client(string host, string appId, string appSecret)
+		public Client(string host, string clientId, string clientSecret)
 		{
 			if (string.IsNullOrEmpty(host))
 				throw new ArgumentNullException("host");
 
-			if (string.IsNullOrEmpty(appId))
-				throw new ArgumentNullException("appId");
+			if (string.IsNullOrEmpty(clientId))
+				throw new ArgumentNullException("clientId");
 
-			if (string.IsNullOrEmpty(appSecret))
-				throw new ArgumentNullException("appSecret");
+			if (string.IsNullOrEmpty(clientSecret))
+				throw new ArgumentNullException("clientSecret");
 
 			_host = host;
-			_appId = appId;
-			_appSecret = appSecret;
+			_clientId = clientId;
+			_clientSecret = clientSecret;
 		}
 
 		private HttpClient GetApiClient()
@@ -70,12 +70,12 @@ namespace Knoema
 			var clientHandler = new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
 			var client = new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(HttpClientTimeout) };
 
-			if (!string.IsNullOrEmpty(_appId) && !string.IsNullOrEmpty(_appSecret))
+			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
 				client.DefaultRequestHeaders.Add("Authorization",
-					string.Format("Knoema {0}:{1}:{2}", _appId,
+					string.Format("Knoema {0}:{1}:{2}", _clientId,
 						Convert.ToBase64String(
 							new HMACSHA1(
-								Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-HH"))).ComputeHash(Encoding.UTF8.GetBytes(_appSecret))),
+								Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-HH"))).ComputeHash(Encoding.UTF8.GetBytes(_clientSecret))),
 								AuthProtoVersion
 					)
 				);
@@ -265,8 +265,8 @@ namespace Knoema
 			}
 			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, _token, "/api/1.0/search", parameters));
 
-			if (!string.IsNullOrEmpty(_appId) && !string.IsNullOrEmpty(_appSecret))
-				message.Headers.Add("Authorization", GetAuthorizationHeaderValue(_appId, _appSecret));
+			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
+				message.Headers.Add("Authorization", GetAuthorizationHeaderValue(_clientId, _clientSecret));
 
 			var sendAsyncResp = await GetApiClient().SendAsync(message);
 			sendAsyncResp.EnsureSuccessStatusCode();
@@ -274,10 +274,10 @@ namespace Knoema
 			return JsonConvert.DeserializeObject<SearchTimeSeriesResponse>(strRead);
 		}
 
-		private static string GetAuthorizationHeaderValue(string appId, string appSecret)
+		private static string GetAuthorizationHeaderValue(string clientId, string clientSecret)
 		{
-			return string.Format("Knoema {0}:{1}:{2}", appId,
-					Convert.ToBase64String(new HMACSHA1(Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-HH"))).ComputeHash(Encoding.UTF8.GetBytes(appSecret))),
+			return string.Format("Knoema {0}:{1}:{2}", clientId,
+					Convert.ToBase64String(new HMACSHA1(Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-HH"))).ComputeHash(Encoding.UTF8.GetBytes(clientSecret))),
 					AuthProtoVersion);
 		}
 
