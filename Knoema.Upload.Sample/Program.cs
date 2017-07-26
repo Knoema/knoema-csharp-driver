@@ -15,8 +15,8 @@ namespace Knoema.Upload.Sample
 		/**********************************/
 		//you can use application Id, application secret instead of access token
 		//if access token is added above then no need to mention below two, make them null
-		public static string appId = "1BTrVoo"; // Replace with your application's id
-		public static string appSecret = "UF1P9UdwduFKbQ"; // Replace with your application's secret
+		public static string clientId = "1BTrVoo"; // Replace with your application's id
+		public static string clientSecret = "UF1P9UdwduFKbQ"; // Replace with your application's secret
 
 		static void Main(string[] args)
 		{
@@ -51,7 +51,7 @@ namespace Knoema.Upload.Sample
 				return;
 			}
 
-			var client = string.IsNullOrEmpty(token) ? new Knoema.Client(host, appId, appSecret) : new Knoema.Client(host, token);
+			var client = string.IsNullOrEmpty(token) ? new Knoema.Client(host, clientId, clientSecret) : new Knoema.Client(host, token);
 
 			Console.WriteLine("Beginning upload process");
 

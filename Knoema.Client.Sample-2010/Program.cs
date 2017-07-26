@@ -13,7 +13,7 @@ namespace Knoema.ClientSample
 		static void Main(string[] args)
 		{
 			var client = new Knoema.Client(
-				ConfigurationManager.AppSettings["host"], ConfigurationManager.AppSettings["appId"], ConfigurationManager.AppSettings["appSecret"]);
+				ConfigurationManager.AppSettings["host"], ConfigurationManager.AppSettings["clientId"], ConfigurationManager.AppSettings["appSecret"]);
 
 			Console.WriteLine("Getting dataset metadata...");
 

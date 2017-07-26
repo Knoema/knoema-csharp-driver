@@ -11,18 +11,13 @@ namespace Knoema.ClientSample
 	class Program
 	{
 		private static string host = "knoema.com";
-		private static string appId = "OOBFP0U"; // Replace with your application's id
-		private static string appSecret = "bCAlu8hKP4sxKw"; // Replace with your application's secret
+		private static string clientId = "OOBFP0U"; // Replace with your application's client id
+		private static string clientSecret = "bCAlu8hKP4sxKw"; // Replace with your application's client secret
 		
 		static void Main(string[] args)
-		{
-			if (args.Length == 0)
-				ListDatasets().Wait();
-			else
-			{
-				var datasetId = args[0];
-				GetData(datasetId).Wait();
-			}
+		{			
+			var datasetId = "IMFWEO2017Apr";
+			GetData(datasetId).Wait();		
 		
 			Console.WriteLine("Press any key to exit.");
 			Console.ReadKey();
@@ -40,7 +35,7 @@ namespace Knoema.ClientSample
 
 		static async Task GetData(string datasetId)
 		{
-			var client = new Knoema.Client(host, appId, appSecret);
+			var client = new Knoema.Client(host, clientId, clientSecret);
 
 			Console.WriteLine("Getting dataset metadata...");
 
