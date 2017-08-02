@@ -25,6 +25,7 @@ namespace Knoema
 		private readonly string _token;
 
 		private string _searchHost;
+        private string _searchCommunityId;
 
 		private const string AuthProtoVersion = "1.2";
 		private const int HttpClientTimeout = 300 * 1000;
@@ -249,20 +250,23 @@ namespace Knoema
 
 		public async Task<SearchTimeSeriesResponse> Search(string searchText, SearchScope scope, int count, int version, string lang = null)
 		{
+			if (_searchHost == null)
+			{
+				var configResponse = await ApiGet<ConfigResponse>("/api/1.0/search/config");
+				_searchHost = configResponse.SearchHost;
+                _searchCommunityId = configResponse.CommunityId;
+			}
+
 			var parameters = new Dictionary<string, string>();
-			parameters.Add("query", searchText.Trim());
-			parameters.Add("scope", scope.GetString());
+            parameters.Add("query", searchText.Trim());
+            parameters.Add("scope", scope.GetString());
+            parameters.Add("communityId", _searchCommunityId);
 			parameters.Add("count", count.ToString());
 			parameters.Add("version", version.ToString());
 			parameters.Add("host", _host);
 			if (lang != null)
 				parameters.Add("lang", lang);
 
-			if (_searchHost == null)
-			{
-				var configResponse = await ApiGet<ConfigResponse>("/api/1.0/search/config");
-				_searchHost = configResponse.SearchHost;
-			}
 			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, _token, "/api/1.0/search", parameters));
 
 			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
