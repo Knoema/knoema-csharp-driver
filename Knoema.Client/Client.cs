@@ -260,7 +260,8 @@ namespace Knoema
             var parameters = new Dictionary<string, string>();
             parameters.Add("query", searchText.Trim());
             parameters.Add("scope", scope.GetString());
-            parameters.Add("communityId", _searchCommunityId);
+            if (!string.IsNullOrEmpty(_searchCommunityId))
+                parameters.Add("communityId", _searchCommunityId);
             parameters.Add("count", count.ToString());
             parameters.Add("version", version.ToString());
             parameters.Add("host", _host);
