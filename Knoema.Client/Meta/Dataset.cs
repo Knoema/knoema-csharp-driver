@@ -15,5 +15,6 @@ namespace Knoema.Meta
 		public DateTime? PublicationDate { get; set; }
 		public IEnumerable<Dimension> Dimensions { get; set; }
 		public IEnumerable<Column> Columns { get; set; }
+		public IEnumerable<TimeSeriesAttribute> TimeSeriesAttributes { get; set; }
 	}
 }

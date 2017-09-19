@@ -7,6 +7,7 @@ namespace Knoema.Data
 		public List<PivotRequestItem> Header { get; set; }
 		public List<PivotRequestItem> Stub { get; set; }
 		public List<PivotRequestItem> Filter { get; set; }
+		public List<PivotRequestTimeSeriesAttributes> TimeSeriesAttributes { get; set; }
 		public string Dataset { get; set; }
 		public List<string> Frequencies { get; set; }
 

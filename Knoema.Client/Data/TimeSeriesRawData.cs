@@ -12,11 +12,12 @@ namespace Knoema.Data
 		private IDictionary<string, JToken> _dimensions;
 
 		public IEnumerable<DimensionItem> Dimensions { get; set; }
+		public Dictionary<string, string> TimeSeriesAttributes { get; set; }
 
 		[OnDeserialized]
 		internal void OnDeserialized(StreamingContext context)
 		{
-			Dimensions = _dimensions.Select(pair => 
+			Dimensions = _dimensions.Select(pair =>
 			{
 				var value = pair.Value.ToObject<DimensionItem>();
 				value.DimensionId = pair.Key;
