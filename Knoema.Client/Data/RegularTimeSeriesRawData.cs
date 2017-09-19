@@ -10,6 +10,6 @@ namespace Knoema.Data
 		public string Frequency { get; set; }
 		public string Unit { get; set; }
 		public float Scale { get; set; }
-		public IEnumerable<object> Values { get; set; }
+		public IEnumerable<string> Values { get; set; }
 	}
 }
