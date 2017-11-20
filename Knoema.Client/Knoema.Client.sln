@@ -1,8 +1,5 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
-MinimumVisualStudioVersion = 10.0.40219.1
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Knoema.Client", "Knoema.Client.csproj", "{0D054031-66B3-4EC6-AA4B-5ABC49323E40}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Knoema.UnitTests", "..\Knoem.Client.UnitTests\Knoema.UnitTests.csproj", "{41EF4128-CFDD-4924-AA83-39C098BAF952}"
