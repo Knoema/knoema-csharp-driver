@@ -16,16 +16,15 @@ namespace Knoema.UnitTests
 		{
 			var client = new Client("knoema.com");
 			var request = new FullDimensionRequest();
-			request.DimensionRequest = new List<DimensionRequestItem>();
 			request.DimensionRequest.Add(new DimensionRequestItem()
 			{
 				DimensionId = "country",
-				Members = new List<int>() { 1000000, 1000100 }
+				Members = { 1000000, 1000100 }
 			});
 			request.DimensionRequest.Add( new DimensionRequestItem()
 			{
 				DimensionId = "subject",
-				Members = new List<int>() { 1000000, 1000200 }
+				Members =  { 1000000, 1000200 }
 			});
 			var tsList = client.GetTimeSeriesList("IMFWEO2017Oct", request).GetAwaiter().GetResult();
 			Assert.AreEqual(2, tsList.Count());
