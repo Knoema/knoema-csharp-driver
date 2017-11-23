@@ -54,11 +54,15 @@
     <Compile Include="Data\DataItemValueConverter.cs" />
     <Compile Include="Data\DataItemValue.cs" />
     <Compile Include="Data\DimensionItem.cs" />
+    <Compile Include="Data\DimensionRequestItem.cs" />
     <Compile Include="Data\FlatTimeSeriesRawData.cs" />
     <Compile Include="Data\FlatTimeSeriesRawDataResponse.cs" />
+    <Compile Include="Data\FullDimensionRequest.cs" />
     <Compile Include="Data\PivotRequestTimeSeriesAttributes.cs" />
     <Compile Include="Data\RegularTimeSeriesRawData.cs" />
     <Compile Include="Data\RegularTimeSeriesRawDataResponse.cs" />
+    <Compile Include="Data\TimeseriesAttributeModel.cs" />
+    <Compile Include="Data\TimeSeriesItem.cs" />
     <Compile Include="Data\TimeSeriesRawData.cs" />
     <Compile Include="Meta\Column.cs" />
     <Compile Include="Meta\Dataset.cs" />
