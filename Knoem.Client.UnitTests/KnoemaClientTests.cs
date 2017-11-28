@@ -36,7 +36,7 @@ namespace Knoema.UnitTests
 		public void GetUnits()
 		{
 			var client = new Client("knoema.com");
-			var unitsList = client.GetAllUnits().GetAwaiter().GetResult();
+			var unitsList = client.GetUnits().GetAwaiter().GetResult();
 			Assert.IsFalse(unitsList.Count() == 0);
 			var unit = new UnitMember()
 			{

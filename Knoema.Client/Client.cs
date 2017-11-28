@@ -175,7 +175,7 @@ namespace Knoema
             return ApiGet<FlatTimeSeriesRawDataResponse>("/api/1.0/data/raw/", string.Format("continuationToken={0}", token));
         }
 
-		public Task<IEnumerable<UnitMember>> GetAllUnits()
+		public Task<IEnumerable<UnitMember>> GetUnits()
 		{
 			return ApiGet<IEnumerable<UnitMember>>("/api/1.0/meta/units");
 		}
