@@ -64,6 +64,7 @@
     <Compile Include="Data\TimeseriesAttributeModel.cs" />
     <Compile Include="Data\TimeSeriesItem.cs" />
     <Compile Include="Data\TimeSeriesRawData.cs" />
+    <Compile Include="Data\UnitMember.cs" />
     <Compile Include="Meta\Column.cs" />
     <Compile Include="Meta\Dataset.cs" />
     <Compile Include="Meta\DateRange.cs" />

@@ -175,12 +175,17 @@ namespace Knoema
             return ApiGet<FlatTimeSeriesRawDataResponse>("/api/1.0/data/raw/", string.Format("continuationToken={0}", token));
         }
 
+		public Task<IEnumerable<UnitMember>> GetAllUnits()
+		{
+			return ApiGet<IEnumerable<UnitMember>>("/api/1.0/meta/units");
+		}
+
 		public Task<IEnumerable<TimeSeriesItem>> GetTimeSeriesList(string datasetId, FullDimensionRequest request)
 		{
 			return ApiPost<IEnumerable<TimeSeriesItem>>(string.Format("/api/1.0/data/dataset/{0}", datasetId), request);
 		}
 
-        public async Task<PostResult> UploadPost(string fileName)
+		public async Task<PostResult> UploadPost(string fileName)
         {
             var fi = new FileInfo(fileName);
             using (var fs = fi.OpenRead())

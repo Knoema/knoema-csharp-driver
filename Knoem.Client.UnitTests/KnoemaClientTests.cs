@@ -21,15 +21,32 @@ namespace Knoema.UnitTests
 				DimensionId = "country",
 				Members = { 1000000, 1000100 }
 			});
-			request.DimensionRequest.Add( new DimensionRequestItem()
+			request.DimensionRequest.Add(new DimensionRequestItem()
 			{
 				DimensionId = "subject",
-				Members =  { 1000000, 1000200 }
+				Members = { 1000000, 1000200 }
 			});
 			var tsList = client.GetTimeSeriesList("IMFWEO2017Oct", request).GetAwaiter().GetResult();
 			Assert.AreEqual(2, tsList.Count());
 			Assert.AreEqual(1062540, tsList.ElementAt(0).TimeseriesKey);
 			Assert.AreEqual(1017350, tsList.ElementAt(1).TimeseriesKey);
 		}
+
+		[TestMethod]
+		public void GetUnits()
+		{
+			var client = new Client("knoema.com");
+			var unitsList = client.GetAllUnits().GetAwaiter().GetResult();
+			Assert.IsFalse(unitsList.Count() == 0);
+			var unit = new UnitMember()
+			{
+				Key = 1000230,
+				Name = "Percent of potential GDP"
+			};
+			Assert.AreEqual("Unit(s)", unitsList.ElementAt(0).Name);
+			var memberKey = unitsList.FirstOrDefault(m => m.Name == unit.Name).Key;
+			Assert.AreEqual(unit.Key, memberKey);
+		}
+
 	}
 }
