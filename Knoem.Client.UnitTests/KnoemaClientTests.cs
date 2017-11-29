@@ -16,12 +16,12 @@ namespace Knoema.UnitTests
 		{
 			var client = new Client("knoema.com");
 			var request = new FullDimensionRequest();
-			request.DimensionRequest.Add(new DimensionRequestItem()
+			request.DimensionRequest.Add(new DimensionRequestItem
 			{
 				DimensionId = "country",
 				Members = { 1000000, 1000100 }
 			});
-			request.DimensionRequest.Add(new DimensionRequestItem()
+			request.DimensionRequest.Add(new DimensionRequestItem
 			{
 				DimensionId = "subject",
 				Members = { 1000000, 1000200 }
@@ -38,7 +38,7 @@ namespace Knoema.UnitTests
 			var client = new Client("knoema.com");
 			var unitsList = client.GetUnits().GetAwaiter().GetResult();
 			Assert.IsFalse(unitsList.Count() == 0);
-			var unit = new UnitMember()
+			var unit = new UnitMember
 			{
 				Key = 1000230,
 				Name = "Percent of potential GDP"

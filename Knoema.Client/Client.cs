@@ -185,7 +185,7 @@ namespace Knoema
 			return ApiPost<IEnumerable<TimeSeriesItem>>(string.Format("/api/1.0/data/dataset/{0}", datasetId), request);
 		}
 
-		public async Task<PostResult> UploadPost(string fileName)
+        public async Task<PostResult> UploadPost(string fileName)
         {
             var fi = new FileInfo(fileName);
             using (var fs = fi.OpenRead())
