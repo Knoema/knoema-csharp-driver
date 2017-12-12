@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Knoema;
 using Knoema.Data;
+using Knoema.Series;
 
 
 namespace Knoema.UnitTests
@@ -46,6 +47,64 @@ namespace Knoema.UnitTests
 			Assert.AreEqual("Unit(s)", unitsList.ElementAt(0).Name);
 			var memberKey = unitsList.FirstOrDefault(m => m.Name == unit.Name).Key;
 			Assert.AreEqual(unit.Key, memberKey);
+		}
+
+		[TestMethod]
+		public void GetTimeseriesData()
+		{
+			var data = Knoema.Get("IMFWEO2017Oct", new PropSet
+			{
+				{ "frequency", "A" },
+				{ "country", "612;614" },
+				{ "subject", "NGDPD;NGDP" }
+			});
+			Assert.IsNotNull(data);
+
+			data = Knoema.Get("IMFWEO2017Oct", @"
+			{
+				""frequency"": ""A"",
+				""country"": ""612;614"",
+				""subject"": ""NGDPD;NGDP""
+			}");
+			Assert.IsNotNull(data);
+
+			data = Knoema.Get("IMFWEO2017Oct", new
+			{
+				Frequency = "A",
+				TimeRange = "2015-2016",
+				Country = "612;614",
+				Subject = new[] { "NGDPD", "NGDP" }
+			});
+			Assert.IsNotNull(data);
+
+			const string countryName = "Angola";
+			const string subjectName = "Gross domestic product, current prices (National currency)";
+
+			var series = data[new
+			{
+				frequency = "A",
+				country = countryName,
+				subject = subjectName
+			}];
+
+			Assert.IsNotNull(series);
+
+			var seriesId = data.MakeId(Frequency.Annual, new[] { 1000030, 1000040 }, new[] { countryName, subjectName });
+
+			Assert.AreEqual(seriesId, series);
+			Assert.AreEqual(seriesId.ToString(), series.ToString());
+
+			series = data[new PropSet
+			{
+				{ "frequency", "A" },
+				{ "country", "614" },
+				{ "subject", "NGDP" }
+			}];
+
+			Assert.IsNotNull(series);
+
+			Assert.AreEqual(seriesId, series);
+			Assert.AreEqual(seriesId.ToString(), series.ToString());
 		}
 
 	}
