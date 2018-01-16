@@ -29,6 +29,7 @@ namespace Knoema
 
         private const string AuthProtoVersion = "1.2";
         private const int HttpClientTimeout = 300 * 1000;
+        private const int HttpClientUploadPostTimeout = HttpClientTimeout * 10;
 
         public Client(string host)
         {
@@ -66,10 +67,10 @@ namespace Knoema
             _clientSecret = clientSecret;
         }
 
-        private HttpClient GetApiClient()
+        private HttpClient GetApiClient(int timeout = HttpClientTimeout)
         {
             var clientHandler = new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
-            var client = new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(HttpClientTimeout) };
+            var client = new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(timeout) };
 
             if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
                 client.DefaultRequestHeaders.Add("Authorization",
@@ -101,7 +102,7 @@ namespace Knoema
             return JsonConvert.DeserializeObject<T>(response);
         }
 
-        private async Task<T> ApiPost<T>(string path, HttpContent content)
+        private async Task<T> ApiPost<T>(string path, HttpContent content, int timeout = HttpClientTimeout)
         {
             var builder = new UriBuilder(Uri.UriSchemeHttp, _host);
             builder.Path = path;
@@ -109,7 +110,7 @@ namespace Knoema
             if (!string.IsNullOrEmpty(_token))
                 builder.Query = "access_token=" + _token;
 
-            var postResponse = await GetApiClient().PostAsync(builder.Uri, content);
+            var postResponse = await GetApiClient(timeout).PostAsync(builder.Uri, content);
             var readString = await postResponse.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<T>(readString);
         }
@@ -175,15 +176,15 @@ namespace Knoema
             return ApiGet<FlatTimeSeriesRawDataResponse>("/api/1.0/data/raw/", string.Format("continuationToken={0}", token));
         }
 
-		public Task<IEnumerable<UnitMember>> GetUnits()
-		{
-			return ApiGet<IEnumerable<UnitMember>>("/api/1.0/meta/units");
-		}
+        public Task<IEnumerable<UnitMember>> GetUnits()
+        {
+            return ApiGet<IEnumerable<UnitMember>>("/api/1.0/meta/units");
+        }
 
-		public Task<IEnumerable<TimeSeriesItem>> GetTimeSeriesList(string datasetId, FullDimensionRequest request)
-		{
-			return ApiPost<IEnumerable<TimeSeriesItem>>(string.Format("/api/1.0/data/dataset/{0}", datasetId), request);
-		}
+        public Task<IEnumerable<TimeSeriesItem>> GetTimeSeriesList(string datasetId, FullDimensionRequest request)
+        {
+            return ApiPost<IEnumerable<TimeSeriesItem>>(string.Format("/api/1.0/data/dataset/{0}", datasetId), request);
+        }
 
         public async Task<PostResult> UploadPost(string fileName)
         {
@@ -194,7 +195,7 @@ namespace Knoema
                 using (var streamContent = new StreamContent(fs))
                 {
                     form.Add(streamContent, "\"file\"", "\"" + fi.Name + "\"");
-                    return await ApiPost<PostResult>("/api/1.0/upload/post", form);
+                    return await ApiPost<PostResult>("/api/1.0/upload/post", form, HttpClientUploadPostTimeout);
                 }
             }
         }
