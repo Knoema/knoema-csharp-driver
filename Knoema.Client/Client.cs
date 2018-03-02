@@ -67,9 +67,15 @@ namespace Knoema
             _clientSecret = clientSecret;
         }
 
+		private CookieContainer _cookies = new CookieContainer();
+
         private HttpClient GetApiClient(int timeout = HttpClientTimeout)
         {
-            var clientHandler = new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
+            var clientHandler = new HttpClientHandler
+			{
+				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+				CookieContainer = _cookies
+			};
             var client = new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(timeout) };
 
             if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
