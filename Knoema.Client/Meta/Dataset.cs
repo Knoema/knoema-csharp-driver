@@ -16,5 +16,6 @@ namespace Knoema.Meta
 		public IEnumerable<Dimension> Dimensions { get; set; }
 		public IEnumerable<Column> Columns { get; set; }
 		public IEnumerable<TimeSeriesAttribute> TimeSeriesAttributes { get; set; }
+		public VerificationStatus Status { get; set; }
 	}
 }
