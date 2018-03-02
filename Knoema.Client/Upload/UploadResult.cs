@@ -10,6 +10,7 @@ namespace Knoema.Upload
 		public List<string> Errors { get; set; }
 		public string Url { get; set; }
 		public DatasetUploadReport Report { get; set; }
+		public string FileName { get; set; }
 
 		public UploadResult()
 		{
