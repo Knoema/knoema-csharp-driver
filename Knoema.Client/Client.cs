@@ -27,6 +27,8 @@ namespace Knoema
         private string _searchHost;
         private string _searchCommunityId;
 
+        private CookieContainer _cookies = new CookieContainer();
+
         private const string AuthProtoVersion = "1.2";
         private const int HttpClientTimeout = 300 * 1000;
         private const int HttpClientUploadPostTimeout = HttpClientTimeout * 10;
@@ -69,7 +71,11 @@ namespace Knoema
 
         private HttpClient GetApiClient(int timeout = HttpClientTimeout)
         {
-            var clientHandler = new HttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate };
+            var clientHandler = new HttpClientHandler
+            {
+                AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
+                CookieContainer = _cookies
+            };
             var client = new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(timeout) };
 
             if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
