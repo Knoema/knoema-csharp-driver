@@ -121,12 +121,12 @@ namespace Knoema
             return JsonConvert.DeserializeObject<T>(readString);
         }
 
-        private Task<T> ApiPost<T>(string path, object obj)
+        private Task<T> ApiPost<T>(string path, object obj, int timeout = HttpClientTimeout)
         {
             var content = new StringContent(JsonConvert.SerializeObject(obj));
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-            return ApiPost<T>(path, content);
+            return ApiPost<T>(path, content, timeout);
         }
 
         public Task<IEnumerable<Dataset>> ListDatasets(string source = null, string topic = null, string region = null)
@@ -164,7 +164,7 @@ namespace Knoema
 
         public Task<RegularTimeSeriesRawDataResponse> GetDataBegin(PivotRequest pivot)
         {
-            return ApiPost<RegularTimeSeriesRawDataResponse>("/api/1.0/data/raw/", pivot);
+            return ApiPost<RegularTimeSeriesRawDataResponse>("/api/1.0/data/raw/", pivot, 600000); // 10 minutes timeout
         }
 
         public Task<RegularTimeSeriesRawDataResponse> GetDataStreaming(string token)
