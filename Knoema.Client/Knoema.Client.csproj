@@ -58,6 +58,8 @@
   <ItemGroup>
     <Compile Include="Client.cs" />
     <Compile Include="ConfigResponse.cs" />
+    <Compile Include="Meta\DatasetConverter.cs" />
+    <Compile Include="Meta\DatasetSettings.cs" />
     <Compile Include="Data\DataItem.cs" />
     <Compile Include="Data\DataItemValueConverter.cs" />
     <Compile Include="Data\DataItemValue.cs" />
@@ -73,6 +75,7 @@
     <Compile Include="Data\TimeSeriesItem.cs" />
     <Compile Include="Data\TimeSeriesRawData.cs" />
     <Compile Include="Data\UnitMember.cs" />
+    <Compile Include="JsonCreationConverter.cs" />
     <Compile Include="Knoema.cs" />
     <Compile Include="Meta\Column.cs" />
     <Compile Include="Meta\Dataset.cs" />
