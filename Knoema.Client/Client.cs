@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using Knoema.Data;
@@ -104,8 +105,10 @@ namespace Knoema
             if (!string.IsNullOrEmpty(query))
                 builder.Query = query;
 
-            var response = await GetApiClient().GetStringAsync(builder.Uri);
-            return JsonConvert.DeserializeObject<T>(response);
+            var response = await GetApiClient().GetAsync(builder.Uri);
+            EnsureSuccessApiCall(response);
+            var content = await response.Content.ReadAsStringAsync();
+            return JsonConvert.DeserializeObject<T>(content);
         }
 
         private async Task<T> ApiPost<T>(string path, HttpContent content, int timeout = HttpClientTimeout)
@@ -117,8 +120,32 @@ namespace Knoema
                 builder.Query = "access_token=" + _token;
 
             var postResponse = await GetApiClient(timeout).PostAsync(builder.Uri, content);
+            EnsureSuccessApiCall(postResponse);
             var readString = await postResponse.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<T>(readString);
+        }
+
+        private static void EnsureSuccessApiCall(HttpResponseMessage response)
+        {
+            if (!response.IsSuccessStatusCode)
+            {
+                var error = "";
+                if (response.Content != null)
+                {
+                    error = response.Content.ReadAsStringAsync().Result;
+                    error = Regex.Replace(error, "<style>(.|\n)+?</style>|<[^>]+>", String.Empty, RegexOptions.Multiline);
+                    error = Regex.Replace(error, @"\r\n\s*\r\n", "\r\n").Trim();
+                }
+                var statusCode = (int)response.StatusCode;
+
+                throw new HttpException(
+                    statusCode,
+                    String.Format("Remote server returned error {0}{1}",
+                        statusCode,
+                        String.IsNullOrEmpty(error)
+                            ? String.Empty
+                            : String.Format("{0}{0}{1}", Environment.NewLine, error)));
+            }
         }
 
         private Task<T> ApiPost<T>(string path, object obj, int timeout = HttpClientTimeout)
