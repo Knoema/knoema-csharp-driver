@@ -19,6 +19,7 @@ namespace Knoema.Meta
 		public IEnumerable<Column> Columns { get; set; }
 		public IEnumerable<TimeSeriesAttribute> TimeSeriesAttributes { get; set; }
 		public VerificationStatus Status { get; set; }
-		public DatasetSettings DatasetSettings { get; set; }
+		[JsonIgnore] // dodging from ambiguous between json object property
+		public DatasetSettings Settings { get; set; }
 	}
 }

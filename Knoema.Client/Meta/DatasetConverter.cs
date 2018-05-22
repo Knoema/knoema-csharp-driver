@@ -19,7 +19,7 @@ namespace Knoema.Meta
 				if (string.IsNullOrEmpty(settingsString))
 					return new Dataset();
 				else
-					return new Dataset { DatasetSettings = JsonConvert.DeserializeObject<DatasetSettings>(settingsString) };
+					return new Dataset { Settings = JsonConvert.DeserializeObject<DatasetSettings>(settingsString) };
 			}
 		}
 	}
