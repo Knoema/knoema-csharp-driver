@@ -1,8 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace Knoema.Meta
 {
+	[JsonConverter(typeof(DatasetConverter))]
 	public class Dataset
 	{
 		public string Id { get; set; }
@@ -17,5 +19,7 @@ namespace Knoema.Meta
 		public IEnumerable<Column> Columns { get; set; }
 		public IEnumerable<TimeSeriesAttribute> TimeSeriesAttributes { get; set; }
 		public VerificationStatus Status { get; set; }
+		[JsonIgnore] // dodging from ambiguous between json object property
+		public DatasetSettings Settings { get; set; }
 	}
 }
