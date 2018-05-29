@@ -31,10 +31,17 @@ namespace Knoema
         private CookieContainer _cookies = new CookieContainer();
 
         private const string AuthProtoVersion = "1.2";
+        private const int DefaultHttpTimeout = 600 * 1000;
 
-        public int HttpTimeout { get; set; } = 600 * 1000;
+        public int HttpTimeout { get; set; }
+
+        private Client()
+        {
+            HttpTimeout = DefaultHttpTimeout;
+        }
 
         public Client(string host)
+            : this()
         {
             if (string.IsNullOrEmpty(host))
                 throw new ArgumentNullException("host");
@@ -43,6 +50,7 @@ namespace Knoema
         }
 
         public Client(string host, string token)
+            : this()
         {
             if (string.IsNullOrEmpty(host))
                 throw new ArgumentNullException("host");
@@ -55,6 +63,7 @@ namespace Knoema
         }
 
         public Client(string host, string clientId, string clientSecret)
+            : this()
         {
             if (string.IsNullOrEmpty(host))
                 throw new ArgumentNullException("host");
