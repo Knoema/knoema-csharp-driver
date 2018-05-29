@@ -31,8 +31,8 @@ namespace Knoema
         private CookieContainer _cookies = new CookieContainer();
 
         private const string AuthProtoVersion = "1.2";
-        private const int HttpClientTimeout = 300 * 1000;
-        private const int HttpClientUploadPostTimeout = HttpClientTimeout * 10;
+
+        public int HttpTimeout { get; set; } = 600 * 1000;
 
         public Client(string host)
         {
@@ -70,14 +70,14 @@ namespace Knoema
             _clientSecret = clientSecret;
         }
 
-        private HttpClient GetApiClient(int timeout = HttpClientTimeout)
+        private HttpClient GetApiClient()
         {
             var clientHandler = new HttpClientHandler
             {
                 AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
                 CookieContainer = _cookies
             };
-            var client = new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(timeout) };
+            var client = new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(HttpTimeout) };
 
             if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
                 client.DefaultRequestHeaders.Add("Authorization",
@@ -111,7 +111,7 @@ namespace Knoema
             return JsonConvert.DeserializeObject<T>(content);
         }
 
-        private async Task<T> ApiPost<T>(string path, HttpContent content, int timeout = HttpClientTimeout)
+        private async Task<T> ApiPost<T>(string path, HttpContent content)
         {
             var builder = new UriBuilder(Uri.UriSchemeHttp, _host);
             builder.Path = path;
@@ -119,7 +119,7 @@ namespace Knoema
             if (!string.IsNullOrEmpty(_token))
                 builder.Query = "access_token=" + _token;
 
-            var postResponse = await GetApiClient(timeout).PostAsync(builder.Uri, content);
+            var postResponse = await GetApiClient().PostAsync(builder.Uri, content);
             EnsureSuccessApiCall(postResponse);
             var readString = await postResponse.Content.ReadAsStringAsync();
             return JsonConvert.DeserializeObject<T>(readString);
@@ -148,12 +148,12 @@ namespace Knoema
             }
         }
 
-        private Task<T> ApiPost<T>(string path, object obj, int timeout = HttpClientTimeout)
+        private Task<T> ApiPost<T>(string path, object obj)
         {
             var content = new StringContent(JsonConvert.SerializeObject(obj));
             content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
 
-            return ApiPost<T>(path, content, timeout);
+            return ApiPost<T>(path, content);
         }
 
         public Task<IEnumerable<Dataset>> ListDatasets(string source = null, string topic = null, string region = null)
@@ -162,11 +162,11 @@ namespace Knoema
                 return ApiGet<IEnumerable<Dataset>>("/api/1.0/meta/dataset");
 
             return ApiPost<IEnumerable<Dataset>>("/api/1.0/meta/dataset", new Dictionary<string, string>()
-					{
-						{"source", source},
-						{"topic", topic},
-						{"region", region}
-					});
+                    {
+                        {"source", source},
+                        {"topic", topic},
+                        {"region", region}
+                    });
         }
 
         public Task<Dataset> GetDataset(string id)
@@ -191,7 +191,7 @@ namespace Knoema
 
         public Task<RegularTimeSeriesRawDataResponse> GetDataBegin(PivotRequest pivot)
         {
-            return ApiPost<RegularTimeSeriesRawDataResponse>("/api/1.0/data/raw/", pivot, 600000); // 10 minutes timeout
+            return ApiPost<RegularTimeSeriesRawDataResponse>("/api/1.0/data/raw/", pivot);
         }
 
         public Task<RegularTimeSeriesRawDataResponse> GetDataStreaming(string token)
@@ -228,7 +228,7 @@ namespace Knoema
                 using (var streamContent = new StreamContent(fs))
                 {
                     form.Add(streamContent, "\"file\"", "\"" + fi.Name + "\"");
-                    return await ApiPost<PostResult>("/api/1.0/upload/post", form, HttpClientUploadPostTimeout);
+                    return await ApiPost<PostResult>("/api/1.0/upload/post", form);
                 }
             }
         }
