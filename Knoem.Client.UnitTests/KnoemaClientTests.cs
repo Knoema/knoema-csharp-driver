@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.IO;
 using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Knoema;
+
 using Knoema.Data;
 using Knoema.Series;
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Knoema.UnitTests
 {
@@ -107,5 +109,74 @@ namespace Knoema.UnitTests
 			Assert.AreEqual(seriesId.ToString(), series.ToString());
 		}
 
+		[TestMethod]
+		public void UnloadData()
+		{
+			var clientId = ConfigurationManager.AppSettings["ClientId"];
+			if (string.IsNullOrEmpty(clientId))
+				return;
+
+			var client = new Client("knoema.org", clientId, "");
+			var request = new PivotRequest()
+			{
+				Dataset = "COMTRADE2015R1",
+				Frequencies = new List<string> { "A" }
+			};
+
+			request.Header.Add(new PivotRequestItem
+			{
+				DimensionId = "Time",
+				Members = { "2010-2011" },
+				UiMode = "range",
+			});
+			request.Stub.Add(new PivotRequestItem
+			{
+				DimensionId = "reporter",
+				Members = { 1000000, 1000100 }
+			});
+			request.Stub.Add(new PivotRequestItem
+			{
+				DimensionId = "indicator",
+				Members = { 1000010, 1000020 }
+			});
+			request.Stub.Add(new PivotRequestItem
+			{
+				DimensionId = "partner",
+				Members = { 1000000, 1000100 }
+			});
+			request.Stub.Add(new PivotRequestItem
+			{
+				DimensionId = "commodity",
+				Members = { 1000110, 1000100 }
+			});
+
+			var tempFolder = Path.GetTempPath() + "KNunload_" + Guid.NewGuid().ToString();
+			Directory.CreateDirectory(tempFolder);
+			try
+			{
+				var files = client.UnloadToLocalFolder(request, tempFolder).GetAwaiter().GetResult();
+				if (files != null)
+				{
+					for (var i = 0; i < files.Length; i++)
+					{
+						var fileName = tempFolder + '\\' + files[i];
+						if (File.Exists(fileName))
+						{
+							try
+							{
+								File.Delete(fileName);
+							}
+							catch (Exception)
+							{
+							}
+						}
+					}
+				}
+			}
+			finally
+			{
+				Directory.Delete(tempFolder, recursive: true);
+			}
+		}
 	}
 }
