@@ -398,19 +398,19 @@ namespace Knoema
 			throw new ArgumentOutOfRangeException("Unexpected task status");
 		}
 
-		public Task<UnloadResponse> Unload(PivotRequest request)
+		private Task<UnloadResponse> StartUnload(PivotRequest request)
 		{
 			return ApiPost<UnloadResponse>("/api/1.0/data/unload", request);
 		}
 
-		public async Task<DatasetUnloadTaskResultData> UnloadData(PivotRequest request, int spinDelayInSeconds = 10, int maxWaitCount = 360)
+		private async Task<DatasetUnloadTaskResultData> Unload(PivotRequest request, int spinDelayInSeconds = 10, int maxWaitCount = 360)
 		{
-			var unloadTask = await Unload(request);
+			var unloadTask = await StartUnload(request);
 			var taskResult = await WaitTaskResult<DatasetUnloadTaskResult>(unloadTask.TaskKey, spinDelayInSeconds, maxWaitCount);
 			return taskResult.Data;
 		}
 
-		public Task<Task>[] UnloadGetFiles(string[] files, Stream[] resultStreams)
+		private Task<Task>[] GetFilesAfterUnload(string[] files, Stream[] resultStreams)
 		{
 			var cts = new CancellationTokenSource();
 			var clientHandler = new HttpClientHandler
@@ -422,33 +422,11 @@ namespace Knoema
 
 			try
 			{
-				var getTasks = new Task<HttpResponseMessage>[files.Length];
-
-				for (var i = 0; i < files.Length; i++)
-				{
-					getTasks[i] = client.GetAsync(files[i], HttpCompletionOption.ResponseHeadersRead, cts.Token);
-				}
-
 				var contentTasks = new Task<HttpResponseMessage>[files.Length];
+
 				for (var i = 0; i < files.Length; i++)
 				{
-					contentTasks[i] = getTasks[i].ContinueWith(t =>
-					{
-						HttpResponseMessage response = null;
-						try
-						{
-							response = t.GetAwaiter().GetResult();
-							return response;
-						}
-						catch (Exception)
-						{
-							cts.Cancel();
-							if (response != null)
-								response.Dispose();
-
-							throw;
-						}
-					}, cts.Token);
+					contentTasks[i] = client.GetAsync(files[i], HttpCompletionOption.ResponseHeadersRead, cts.Token);
 				}
 
 				for (var i = 0; i < files.Length; i++)
@@ -499,9 +477,9 @@ namespace Knoema
 
 		public async Task<string[]> UnloadToLocalFolder(PivotRequest request, string destinationFolder)
 		{
-			var unloadData = await UnloadData(request);
+			var unloadResult = await Unload(request);
 
-			var files = unloadData.Files.ToArray();
+			var files = unloadResult.Files.ToArray();
 			var fileNames = new string[files.Length];
 			var urls = new string[files.Length];
 			var fileStreams = new Stream[files.Length];
@@ -517,7 +495,7 @@ namespace Knoema
 					urls[i] = file.Url;
 				}
 
-				var copyTasks = await Task.WhenAll(UnloadGetFiles(urls, fileStreams));
+				var copyTasks = await Task.WhenAll(GetFilesAfterUnload(urls, fileStreams));
 				await Task.WhenAll(copyTasks);
 				succeeded = true;
 			}
@@ -542,9 +520,7 @@ namespace Knoema
 							{
 								File.Delete(destinationFolder + '\\' + fileNames[i]);
 							}
-							catch (Exception)
-							{
-							}
+							catch { }
 						}
 					}
 
