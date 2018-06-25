@@ -58,6 +58,11 @@
   <ItemGroup>
     <Compile Include="Client.cs" />
     <Compile Include="ConfigResponse.cs" />
+    <Compile Include="Data\UnloadResponse.cs" />
+    <Compile Include="Meta\DatasetUnloadTaskResult.cs" />
+    <Compile Include="Meta\DatasetUnloadTaskResultData.cs" />
+    <Compile Include="Meta\TaskStatus.cs" />
+    <Compile Include="Meta\TaskResult.cs" />
     <Compile Include="Meta\DatasetConverter.cs" />
     <Compile Include="Meta\DatasetSettings.cs" />
     <Compile Include="Data\DataItem.cs" />
