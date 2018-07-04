@@ -368,17 +368,20 @@ namespace Knoema
 			return builder.Uri;
 		}
 
-		public Task<T> GetTaskResult<T>(int taskKey) where T : TaskResult
+		public Task<T> GetTaskResult<T>(TaskResponse taskResponse) where T : TaskResult
 		{
-			return ApiGet<T>("/api/1.0/meta/taskresult", string.Format("taskKey={0}", taskKey));
+			if (taskResponse.ProxyData == null && taskResponse.TaskKey.HasValue)
+				return ApiGet<T>("/api/1.0/meta/taskresult", string.Format("taskKey={0}", taskResponse.TaskKey.Value));
+
+			return ApiPost<T>("/api/1.0/meta/taskresult", taskResponse);
 		}
 
-		public async Task<T> WaitTaskResult<T>(int taskKey, int spinDelayInSeconds, int maxWaitCount) where T : TaskResult
+		public async Task<T> WaitTaskResult<T>(TaskResponse taskResponse, int spinDelayInSeconds, int maxWaitCount) where T : TaskResult
 		{
 			T taskResult = null;
 			for (var i = 0; ;)
 			{
-				taskResult = await GetTaskResult<T>(taskKey);
+				taskResult = await GetTaskResult<T>(taskResponse);
 				if (!(taskResult.Status == Meta.TaskStatus.Executing || taskResult.Status == Meta.TaskStatus.Pending))
 					break;
 				i++;
@@ -398,15 +401,15 @@ namespace Knoema
 			throw new ArgumentOutOfRangeException("Unexpected task status");
 		}
 
-		private Task<UnloadResponse> StartUnload(PivotRequest request)
+		private Task<TaskResponse> StartUnload(PivotRequest request)
 		{
-			return ApiPost<UnloadResponse>("/api/1.0/data/unload", request);
+			return ApiPost<TaskResponse>("/api/1.0/data/unload", request);
 		}
 
 		private async Task<DatasetUnloadTaskResultData> Unload(PivotRequest request, int spinDelayInSeconds = 10, int maxWaitCount = 360)
 		{
-			var unloadTask = await StartUnload(request);
-			var taskResult = await WaitTaskResult<DatasetUnloadTaskResult>(unloadTask.TaskKey, spinDelayInSeconds, maxWaitCount);
+			var unloadTaskResponse = await StartUnload(request);
+			var taskResult = await WaitTaskResult<DatasetUnloadTaskResult>(unloadTaskResponse, spinDelayInSeconds, maxWaitCount);
 			return taskResult.Data;
 		}
 
