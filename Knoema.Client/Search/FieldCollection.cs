@@ -1,10 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace Knoema
 {
+	/// <summary>
+	/// This class is for deserialization collection, presented as property-value pairs in json
+	/// </summary>
+	/// <typeparam name="T"></typeparam>
 	public abstract class FieldCollection<T>
 	{
 		[JsonExtensionData]
