@@ -11,11 +11,13 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+
 using Knoema.Data;
 using Knoema.Meta;
 using Knoema.Search;
 using Knoema.Search.TimeseriesSearch;
 using Knoema.Upload;
+
 using Newtonsoft.Json;
 
 namespace Knoema
@@ -341,7 +343,7 @@ namespace Knoema
 				parameters.Add("lang", lang);
 
 
-			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, _token, "/api/1.0/search/timeseries", parameters));
+			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, _token, "/api/1.0/search/timeseries", _scheme, parameters));
 
 			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
 				message.Headers.Add("Authorization", GetAuthorizationHeaderValue(_clientId, _clientSecret));
@@ -380,7 +382,7 @@ namespace Knoema
 			if (lang != null)
 				parameters.Add("lang", lang);
 
-			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, _token, "/api/1.0/search", parameters));
+			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, _token, "/api/1.0/search", _scheme, parameters));
 
 			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
 				message.Headers.Add("Authorization", GetAuthorizationHeaderValue(_clientId, _clientSecret));
@@ -398,7 +400,7 @@ namespace Knoema
 					AuthProtoVersion);
 		}
 
-		private Uri GetUri(string host, string token, string path, Dictionary<string, string> parameters = null)
+		private static Uri GetUri(string host, string token, string path, string scheme, Dictionary<string, string> parameters = null)
 		{
 			if (!string.IsNullOrEmpty(token))
 			{
@@ -406,7 +408,7 @@ namespace Knoema
 					parameters = new Dictionary<string, string>();
 				parameters.Add("access_token", token);
 			}
-			var builder = new UriBuilder(_scheme, host)
+			var builder = new UriBuilder(scheme, host)
 			{
 				Path = path,
 				Query = parameters != null ?

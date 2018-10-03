@@ -1,8 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.Serialization;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Linq;
 
 namespace Knoema.Search.TimeseriesSearch
 {
