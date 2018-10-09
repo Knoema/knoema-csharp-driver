@@ -6,7 +6,7 @@ namespace Knoema.Search.TimeseriesSearch
 	{
 		public int Count { get; set; }
 		public TimeseriesSearchRequestFacets FacetsFilter { get; set; }
-		public List<TimeseriesSearchLocation> Locations { get; set; }
+		public List<object> Locations { get; set; }
 		public bool PrepareFacets { get; set; }
 	}
 }
