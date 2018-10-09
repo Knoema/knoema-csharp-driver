@@ -2,7 +2,7 @@
 
 namespace Knoema.Search.TimeseriesSearch
 {
-	public class TimeseriesSearchRegionLinkInfo
+	public class GeographyRegion
 	{
 		public string Id { get; set; }
 		public string LocalizedName { get; set; }

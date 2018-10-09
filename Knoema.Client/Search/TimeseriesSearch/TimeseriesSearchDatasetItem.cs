@@ -7,6 +7,6 @@ namespace Knoema.Search.TimeseriesSearch
 		public DatasetDescriptor Dataset { get; set; }
 		public TimeseriesSearchFacets Facets { get; set; }
 		public IEnumerable<TimeSeriesDescriptor> Items { get; set; }
-		public TimeseriesSearchLocation Location { get; set; }
+		public object Location { get; set; }
 	}
 }

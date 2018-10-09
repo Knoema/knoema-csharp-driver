@@ -101,13 +101,9 @@
     <Compile Include="Search\DatasetDecriptor.cs" />
     <Compile Include="Search\SearchScopeUtil.cs" />
     <Compile Include="Search\TimeseriesSearch\TimeseriesSearchDatasetItem.cs" />
-    <Compile Include="Search\TimeseriesSearch\TimeseriesSearchDataSourceInfo.cs" />
-    <Compile Include="Search\TimeseriesSearch\TimeseriesSearchDataSourceInfos.cs" />
+    <Compile Include="Search\TimeseriesSearch\DatasetSourceItem.cs" />
     <Compile Include="Search\TimeseriesSearch\TimeseriesSearchFacets.cs" />
-    <Compile Include="Search\TimeseriesSearch\TimeseriesSearchLocation.cs" />
-    <Compile Include="Search\TimeseriesSearch\TimeseriesSearchPositionItem.cs" />
-    <Compile Include="Search\TimeseriesSearch\TimeseriesSearchRegionLinkInfo.cs" />
-    <Compile Include="Search\TimeseriesSearch\TimeseriesSearchRegionLinkInfos.cs" />
+    <Compile Include="Search\TimeseriesSearch\GeographyRegion.cs" />
     <Compile Include="Search\TimeseriesSearch\TimeseriesSearchRequest.cs" />
     <Compile Include="Search\TimeseriesSearch\TimeseriesSearchRequestFacets.cs" />
     <Compile Include="Search\TimeseriesSearch\TimeseriesSearchResponse.cs" />
