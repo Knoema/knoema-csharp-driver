@@ -58,7 +58,6 @@
   <ItemGroup>
     <Compile Include="Client.cs" />
     <Compile Include="ConfigResponse.cs" />
-    <Compile Include="Search\FieldCollection.cs" />
     <Compile Include="Meta\DatasetUnloadTaskResult.cs" />
     <Compile Include="Meta\DatasetUnloadTaskResultData.cs" />
     <Compile Include="Meta\TaskResponse.cs" />
