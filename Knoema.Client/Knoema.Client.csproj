@@ -105,7 +105,7 @@
     <Compile Include="Search\TimeseriesSearch\GeographyRegion.cs" />
     <Compile Include="Search\TimeseriesSearch\TimeseriesSearchRequest.cs" />
     <Compile Include="Search\TimeseriesSearch\TimeseriesSearchRequestFacets.cs" />
-    <Compile Include="Search\TimeseriesSearch\TimeseriesSearchResponse.cs" />
+    <Compile Include="Search\TimeseriesSearch\ServerTimeseriesSearchResponse .cs" />
     <Compile Include="Series\AttributesMap.cs" />
     <Compile Include="Series\PropSet.cs" />
     <Compile Include="Series\TimeFormat.cs" />

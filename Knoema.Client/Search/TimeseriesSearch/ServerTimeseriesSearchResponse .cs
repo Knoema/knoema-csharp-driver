@@ -2,7 +2,7 @@
 
 namespace Knoema.Search.TimeseriesSearch
 {
-	public class TimeseriesSearchResponse
+	public class ServerTimeseriesSearchResponse
 	{
 		public TimeseriesSearchFacets Facets { get; set; }
 		public IEnumerable<TimeseriesSearchDatasetItem> Items { get; set; }

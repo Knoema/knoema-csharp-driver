@@ -50,7 +50,7 @@ namespace Knoema.UnitTests
 			}
 			while (group.Any());
 
-			Console.WriteLine(count);
+			Console.WriteLine(string.Format("Queries count = {0}", count));
 		}
 
 		[TestMethod]

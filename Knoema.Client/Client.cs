@@ -323,7 +323,7 @@ namespace Knoema
 			return ApiGet<DateRange>(string.Format("/api/1.0/meta/dataset/{0}/daterange", datasetId));
 		}
 
-		public async Task<TimeseriesSearchResponse> SearchTimeseries(TimeseriesSearchRequest request, string lang = null)
+		public async Task<ServerTimeseriesSearchResponse> SearchTimeseries(TimeseriesSearchRequest request, string lang = null)
 		{
 			if (_searchHost == null)
 			{
@@ -348,15 +348,18 @@ namespace Knoema
 			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
 				message.Headers.Add("Authorization", GetAuthorizationHeaderValue(_clientId, _clientSecret));
 
-			var content = new StringContent(JsonConvert.SerializeObject(request));
-			content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+			var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
 
 			message.Content = content;
 
 			var sendAsyncResp = await GetApiClient().SendAsync(message);
 			sendAsyncResp.EnsureSuccessStatusCode();
 			var strRead = await sendAsyncResp.Content.ReadAsStringAsync();
-			return JsonConvert.DeserializeObject<TimeseriesSearchResponse>(strRead);
+			var result = JsonConvert.DeserializeObject<ServerTimeseriesSearchResponse>(strRead);
+			foreach (var datasetItem in result.Items)
+				foreach (var series in datasetItem.Items)
+					series.Dataset = datasetItem.Dataset;
+			return result;
 		}
 
 		public async Task<SearchTimeSeriesResponse> Search(string searchText, SearchScope scope, int count, int version, string lang = null)
