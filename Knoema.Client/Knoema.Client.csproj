@@ -99,6 +99,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Search\DatasetDecriptor.cs" />
     <Compile Include="Search\SearchScopeUtil.cs" />
+    <Compile Include="Search\TimeseriesSearch\TimeseriesSearchDatasetItem.cs" />
+    <Compile Include="Search\TimeseriesSearch\DatasetSourceItem.cs" />
+    <Compile Include="Search\TimeseriesSearch\TimeseriesSearchFacets.cs" />
+    <Compile Include="Search\TimeseriesSearch\GeographyRegion.cs" />
+    <Compile Include="Search\TimeseriesSearch\TimeseriesSearchRequest.cs" />
+    <Compile Include="Search\TimeseriesSearch\TimeseriesSearchRequestFacets.cs" />
+    <Compile Include="Search\TimeseriesSearch\TimeseriesSearchResponse.cs" />
     <Compile Include="Series\AttributesMap.cs" />
     <Compile Include="Series\PropSet.cs" />
     <Compile Include="Series\TimeFormat.cs" />
