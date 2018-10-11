@@ -40,7 +40,7 @@ namespace Knoema
 
 		public int HttpTimeout { get; set; }
 
-		private Client(bool ignoreCertErrors, string scheme)
+		private Client(bool ignoreCertErrorsOnAllConnectionns, string scheme)
 		{
 			HttpTimeout = DefaultHttpTimeout;
 
@@ -48,7 +48,7 @@ namespace Knoema
 			if (string.IsNullOrEmpty(_scheme))
 				_scheme = Uri.UriSchemeHttp;
 
-			if (ignoreCertErrors)
+			if (ignoreCertErrorsOnAllConnectionns)
 				ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 		}
 
