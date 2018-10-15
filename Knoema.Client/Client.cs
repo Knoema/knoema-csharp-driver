@@ -29,6 +29,7 @@ namespace Knoema
 		private readonly string _clientId;
 		private readonly string _clientSecret;
 		private readonly string _token;
+		private readonly bool _ignoreCertErrors;
 
 		private string _searchHost;
 		private string _searchCommunityId;
@@ -40,7 +41,7 @@ namespace Knoema
 
 		public int HttpTimeout { get; set; }
 
-		private Client(bool ignoreCertErrorsOnAllConnectionns, string scheme)
+		private Client(bool ignoreCertErrors, string scheme)
 		{
 			HttpTimeout = DefaultHttpTimeout;
 
@@ -48,8 +49,7 @@ namespace Knoema
 			if (string.IsNullOrEmpty(_scheme))
 				_scheme = Uri.UriSchemeHttp;
 
-			if (ignoreCertErrorsOnAllConnectionns)
-				ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+			_ignoreCertErrors = ignoreCertErrors;
 		}
 
 		public Client(string host, bool ignoreCertErrors = false, string scheme = "")
@@ -93,11 +93,15 @@ namespace Knoema
 
 		private HttpClient GetApiClient()
 		{
-			var clientHandler = new HttpClientHandler
+			var clientHandler = new WebRequestHandler
 			{
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
 				CookieContainer = _cookies
 			};
+			
+			if (_ignoreCertErrors)
+				clientHandler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+
 			var client = new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(HttpTimeout) };
 
 			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
@@ -323,7 +327,7 @@ namespace Knoema
 			return ApiGet<DateRange>(string.Format("/api/1.0/meta/dataset/{0}/daterange", datasetId));
 		}
 
-		public async Task<ServerTimeseriesSearchResponse> SearchTimeseries(TimeseriesSearchRequest request, string lang = null)
+		public async Task<Response> SearchTimeseries(Request request, string lang = null)
 		{
 			if (_searchHost == null)
 			{
@@ -355,7 +359,7 @@ namespace Knoema
 			var sendAsyncResp = await GetApiClient().SendAsync(message);
 			sendAsyncResp.EnsureSuccessStatusCode();
 			var strRead = await sendAsyncResp.Content.ReadAsStringAsync();
-			var result = JsonConvert.DeserializeObject<ServerTimeseriesSearchResponse>(strRead);
+			var result = JsonConvert.DeserializeObject<Response>(strRead);
 			foreach (var datasetItem in result.Items)
 				foreach (var series in datasetItem.Items)
 					series.Dataset = datasetItem.Dataset;

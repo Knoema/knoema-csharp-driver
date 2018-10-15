@@ -2,7 +2,7 @@
 
 namespace Knoema.Search.TimeseriesSearch
 {
-	public class TimeseriesSearchRequestFacets
+	public class RequestFacets
 	{
 		public Dictionary<string, int> DataSources { get; set; }
 		public int Forecasts { get; set; }

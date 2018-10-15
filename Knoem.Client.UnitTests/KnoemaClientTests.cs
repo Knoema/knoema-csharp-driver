@@ -33,7 +33,7 @@ namespace Knoema.UnitTests
 			var count = 0;
 			do
 			{
-				var searchContinueRequest = new TimeseriesSearchRequest
+				var searchContinueRequest = new Request
 				{
 					Count = 200,
 					PrepareFacets = true,
