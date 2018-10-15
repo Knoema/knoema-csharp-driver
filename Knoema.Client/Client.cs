@@ -11,20 +11,25 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+
 using Knoema.Data;
 using Knoema.Meta;
 using Knoema.Search;
+using Knoema.Search.TimeseriesSearch;
 using Knoema.Upload;
+
 using Newtonsoft.Json;
 
 namespace Knoema
 {
 	public class Client
 	{
+		private readonly string _scheme;
 		private readonly string _host;
 		private readonly string _clientId;
 		private readonly string _clientSecret;
 		private readonly string _token;
+		private readonly bool _ignoreCertErrors;
 
 		private string _searchHost;
 		private string _searchCommunityId;
@@ -36,13 +41,19 @@ namespace Knoema
 
 		public int HttpTimeout { get; set; }
 
-		private Client()
+		private Client(bool ignoreCertErrors, string scheme)
 		{
 			HttpTimeout = DefaultHttpTimeout;
+
+			_scheme = scheme;
+			if (string.IsNullOrEmpty(_scheme))
+				_scheme = Uri.UriSchemeHttp;
+
+			_ignoreCertErrors = ignoreCertErrors;
 		}
 
-		public Client(string host)
-			: this()
+		public Client(string host, bool ignoreCertErrors = false, string scheme = "")
+			: this(ignoreCertErrors, scheme)
 		{
 			if (string.IsNullOrEmpty(host))
 				throw new ArgumentNullException("host");
@@ -50,8 +61,8 @@ namespace Knoema
 			_host = host;
 		}
 
-		public Client(string host, string token)
-			: this()
+		public Client(string host, string token, bool ignoreCertErrors = false, string scheme = "")
+			: this(ignoreCertErrors, scheme)
 		{
 			if (string.IsNullOrEmpty(host))
 				throw new ArgumentNullException("host");
@@ -63,8 +74,8 @@ namespace Knoema
 			_token = token;
 		}
 
-		public Client(string host, string clientId, string clientSecret)
-			: this()
+		public Client(string host, string clientId, string clientSecret, bool ignoreCertErrors = false, string scheme = "")
+			: this(ignoreCertErrors, scheme)
 		{
 			if (string.IsNullOrEmpty(host))
 				throw new ArgumentNullException("host");
@@ -82,11 +93,15 @@ namespace Knoema
 
 		private HttpClient GetApiClient()
 		{
-			var clientHandler = new HttpClientHandler
+			var clientHandler = new WebRequestHandler
 			{
 				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
 				CookieContainer = _cookies
 			};
+			
+			if (_ignoreCertErrors)
+				clientHandler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+
 			var client = new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(HttpTimeout) };
 
 			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
@@ -104,7 +119,7 @@ namespace Knoema
 
 		private Uri MakeUri(string path, string query = null)
 		{
-			var builder = new UriBuilder(Uri.UriSchemeHttp, _host);
+			var builder = new UriBuilder(_scheme, _host);
 
 			if (!string.IsNullOrEmpty(path))
 				builder.Path = path;
@@ -312,6 +327,45 @@ namespace Knoema
 			return ApiGet<DateRange>(string.Format("/api/1.0/meta/dataset/{0}/daterange", datasetId));
 		}
 
+		public async Task<Response> SearchTimeseries(Request request, string lang = null)
+		{
+			if (_searchHost == null)
+			{
+				var configResponse = await ApiGet<ConfigResponse>("/api/1.0/search/config");
+				_searchHost = configResponse.SearchHost;
+				_searchCommunityId = configResponse.CommunityId;
+			}
+
+			var parameters = new Dictionary<string, string>
+			{
+				{ "host", _host },
+				{ "baseHost", _host }
+			};
+			if (!string.IsNullOrEmpty(_searchCommunityId))
+				parameters.Add("communityId", _searchCommunityId);
+			if (lang != null)
+				parameters.Add("lang", lang);
+
+
+			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, _token, "/api/1.0/search/timeseries", _scheme, parameters));
+
+			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
+				message.Headers.Add("Authorization", GetAuthorizationHeaderValue(_clientId, _clientSecret));
+
+			var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
+
+			message.Content = content;
+
+			var sendAsyncResp = await GetApiClient().SendAsync(message);
+			sendAsyncResp.EnsureSuccessStatusCode();
+			var strRead = await sendAsyncResp.Content.ReadAsStringAsync();
+			var result = JsonConvert.DeserializeObject<Response>(strRead);
+			foreach (var datasetItem in result.Items)
+				foreach (var series in datasetItem.Items)
+					series.Dataset = datasetItem.Dataset;
+			return result;
+		}
+
 		public async Task<SearchTimeSeriesResponse> Search(string searchText, SearchScope scope, int count, int version, string lang = null)
 		{
 			if (_searchHost == null)
@@ -321,18 +375,21 @@ namespace Knoema
 				_searchCommunityId = configResponse.CommunityId;
 			}
 
-			var parameters = new Dictionary<string, string>();
-			parameters.Add("query", searchText.Trim());
-			parameters.Add("scope", scope.GetString());
+			var parameters = new Dictionary<string, string>
+			{
+				{ "query", searchText.Trim() },
+				{ "scope", scope.GetString() },
+				{ "count", count.ToString() },
+				{ "version", version.ToString() },
+				{ "host", _host },
+				{ "baseHost", _host }
+			};
 			if (!string.IsNullOrEmpty(_searchCommunityId))
 				parameters.Add("communityId", _searchCommunityId);
-			parameters.Add("count", count.ToString());
-			parameters.Add("version", version.ToString());
-			parameters.Add("host", _host);
 			if (lang != null)
 				parameters.Add("lang", lang);
 
-			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, _token, "/api/1.0/search", parameters));
+			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, _token, "/api/1.0/search", _scheme, parameters));
 
 			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
 				message.Headers.Add("Authorization", GetAuthorizationHeaderValue(_clientId, _clientSecret));
@@ -350,7 +407,7 @@ namespace Knoema
 					AuthProtoVersion);
 		}
 
-		private static Uri GetUri(string host, string token, string path, Dictionary<string, string> parameters = null)
+		private static Uri GetUri(string host, string token, string path, string scheme, Dictionary<string, string> parameters = null)
 		{
 			if (!string.IsNullOrEmpty(token))
 			{
@@ -358,7 +415,7 @@ namespace Knoema
 					parameters = new Dictionary<string, string>();
 				parameters.Add("access_token", token);
 			}
-			var builder = new UriBuilder(Uri.UriSchemeHttp, host)
+			var builder = new UriBuilder(scheme, host)
 			{
 				Path = path,
 				Query = parameters != null ?

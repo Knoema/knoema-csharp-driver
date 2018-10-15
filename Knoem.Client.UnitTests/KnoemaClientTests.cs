@@ -5,6 +5,8 @@ using System.IO;
 using System.Linq;
 
 using Knoema.Data;
+using Knoema.Search;
+using Knoema.Search.TimeseriesSearch;
 using Knoema.Series;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -14,6 +16,43 @@ namespace Knoema.UnitTests
 	[TestClass]
 	public class KnoemaClientTests
 	{
+		[Timeout(20 * 1000)]
+		[TestMethod]
+		public void SearchTest()
+		{
+			var instance = new Client("knoema.com");
+
+			var scope = SearchScope.Atlas | SearchScope.NamedEntity | SearchScope.Semantic | SearchScope.Timeseries;
+			var searchBeginResponse = instance.Search("north korea natural resources", scope, -1, 3, "en-US").GetAwaiter().GetResult();
+
+			Assert.IsTrue(searchBeginResponse.Items.Any());
+
+			var locations = searchBeginResponse.Items.Select(e => e.Location).Where(e => e != null).ToList();
+
+			var group = new List<TimeSeriesDescriptor>();
+			var count = 0;
+			do
+			{
+				var searchContinueRequest = new Request
+				{
+					Count = 200,
+					PrepareFacets = true,
+					Locations = locations,
+				};
+
+				var searchContinueResponse = instance.SearchTimeseries(searchContinueRequest, "en-US").GetAwaiter().GetResult();
+
+				group = searchContinueResponse.Items.SelectMany(e => e.Items).Where(e => e != null).ToList();
+				
+				count++;
+
+				locations = searchContinueResponse.Items.Select(e => e.Location).Where(e => e != null).ToList();
+			}
+			while (group.Any());
+
+			Console.WriteLine(string.Format("Queries count = {0}", count));
+		}
+
 		[TestMethod]
 		public void GetTimeSeriesList()
 		{
