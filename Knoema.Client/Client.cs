@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -105,15 +106,8 @@ namespace Knoema
 			var client = new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(HttpTimeout) };
 
 			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
-				client.DefaultRequestHeaders.Add("Authorization",
-					string.Format("Knoema {0}:{1}:{2}", _clientId,
-						Convert.ToBase64String(
-							new HMACSHA1(
-								Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-HH"))).ComputeHash(Encoding.UTF8.GetBytes(_clientSecret))),
-								AuthProtoVersion
-					)
-				);
-
+				client.DefaultRequestHeaders.Add("Authorization", GetAuthorizationHeaderValue(_clientId, _clientSecret));
+			
 			return client;
 		}
 
@@ -403,7 +397,7 @@ namespace Knoema
 		private static string GetAuthorizationHeaderValue(string clientId, string clientSecret)
 		{
 			return string.Format("Knoema {0}:{1}:{2}", clientId,
-					Convert.ToBase64String(new HMACSHA1(Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-HH"))).ComputeHash(Encoding.UTF8.GetBytes(clientSecret))),
+					Convert.ToBase64String(new HMACSHA1(Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-HH", CultureInfo.InvariantCulture))).ComputeHash(Encoding.UTF8.GetBytes(clientSecret))),
 					AuthProtoVersion);
 		}
 
