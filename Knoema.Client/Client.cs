@@ -11,7 +11,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 
 using Knoema.Data;
 using Knoema.Meta;
@@ -94,20 +93,27 @@ namespace Knoema
 
 		private HttpClient GetApiClient()
 		{
-			var clientHandler = new WebRequestHandler
-			{
-				AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate,
-				CookieContainer = _cookies
-			};
-			
+#if NET45
+			var clientHandler = new WebRequestHandler();
+#else
+			var clientHandler = new HttpClientHandler();
+#endif
+
 			if (_ignoreCertErrors)
+#if NET45
 				clientHandler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+#else
+				clientHandler.ServerCertificateCustomValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+#endif
+
+			clientHandler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+			clientHandler.CookieContainer = _cookies;
 
 			var client = new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(HttpTimeout) };
 
 			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
 				client.DefaultRequestHeaders.Add("Authorization", GetAuthorizationHeaderValue(_clientId, _clientSecret));
-			
+
 			return client;
 		}
 
@@ -162,18 +168,17 @@ namespace Knoema
 				if (response.Content != null)
 				{
 					error = response.Content.ReadAsStringAsync().Result;
-					error = Regex.Replace(error, "<style>(.|\n)+?</style>|<[^>]+>", String.Empty, RegexOptions.Multiline);
+					error = Regex.Replace(error, "<style>(.|\n)+?</style>|<[^>]+>", string.Empty, RegexOptions.Multiline);
 					error = Regex.Replace(error, @"\r\n\s*\r\n", "\r\n").Trim();
 				}
 				var statusCode = (int)response.StatusCode;
 
-				throw new HttpException(
-					statusCode,
-					String.Format("Remote server returned error {0}{1}",
+				throw new WebException(
+					string.Format("Remote server returned error {0}{1}",
 						statusCode,
-						String.IsNullOrEmpty(error)
-							? String.Empty
-							: String.Format("{0}{0}{1}", Environment.NewLine, error)));
+						string.IsNullOrEmpty(error)
+							? string.Empty
+							: string.Format("{0}{0}{1}", Environment.NewLine, error)));
 			}
 		}
 
@@ -413,7 +418,7 @@ namespace Knoema
 			{
 				Path = path,
 				Query = parameters != null ?
-					string.Join("&", parameters.Select(pair => string.Format("{0}={1}", pair.Key, HttpUtility.UrlEncode(pair.Value)))) :
+					string.Join("&", parameters.Select(pair => string.Format("{0}={1}", pair.Key, WebUtility.UrlEncode(pair.Value)))) :
 					string.Empty
 			};
 			return builder.Uri;
