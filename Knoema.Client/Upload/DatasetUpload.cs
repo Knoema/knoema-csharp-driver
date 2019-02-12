@@ -22,6 +22,7 @@ namespace Knoema.Upload
 				Url = verifyResult.MetadataDetails.DatasetRef;
 				PubDate = verifyResult.MetadataDetails.PublicationDate;
 				AccessedOn = verifyResult.MetadataDetails.AccessedOn;
+				NextReleaseDate = verifyResult.MetadataDetails.NextReleaseDate;
 			}
 		}
 
@@ -30,6 +31,7 @@ namespace Knoema.Upload
 		public string Name { get; set; }
 		public DateTime? PubDate { get; set; }
 		public DateTime? AccessedOn { get; set; }
+		public DateTime? NextReleaseDate { get; set; }
 		public string Source { get; set; }
 		public List<object> Columns { get; set; }
 		public FileProperties FileProperty { get; set; }
