@@ -11,5 +11,6 @@ namespace Knoema.Upload
 		public string DatasetRef { get; set; }
 		public DateTime? PublicationDate { get; set; }
 		public DateTime? AccessedOn { get; set; }
+		public DateTime? NextReleaseDate { get; set; }
 	}
 }
