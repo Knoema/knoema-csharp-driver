@@ -15,6 +15,9 @@ namespace Knoema.Meta
 		public string HasGeoDimension { get; set; }
 		public string RegionDimensionId { get; set; }
 		public DateTime? PublicationDate { get; set; }
+		public DateTime? AccessedOn { get; set; }
+		public DateTime? NextReleaseDate { get; set; }
+		public DateTime LastUpdatedOn { get; set; }
 		public IEnumerable<Dimension> Dimensions { get; set; }
 		public IEnumerable<Column> Columns { get; set; }
 		public IEnumerable<TimeSeriesAttribute> TimeSeriesAttributes { get; set; }
