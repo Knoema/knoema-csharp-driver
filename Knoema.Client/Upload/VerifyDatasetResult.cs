@@ -2,7 +2,7 @@
 
 namespace Knoema.Upload
 {
-	public class VerifyDatasetResult
+	public class RequestStatusResult
 	{
 		public string Status { get; set; }
 		public List<string> Errors { get; set; }
