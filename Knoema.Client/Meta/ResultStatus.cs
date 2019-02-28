@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace Knoema.Upload
+namespace Knoema.Meta
 {
-	public class RequestStatusResult
+	public class ResultStatus
 	{
 		public string Status { get; set; }
 		public List<string> Errors { get; set; }

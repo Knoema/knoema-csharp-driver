@@ -310,14 +310,14 @@ namespace Knoema
 			return UploadStatus(result.Id);
 		}
 
-		public Task<RequestStatusResult> UpdateDatasetMetadata(string datasetId, MetadataUpdate metadataUpdate)
+		public Task<ResultStatus> UpdateDatasetMetadata(string datasetId, MetadataUpdate metadataUpdate)
 		{
-			return ApiPost<RequestStatusResult>(string.Format("/api/1.0/meta/dataset/{0}", datasetId), metadataUpdate);
+			return ApiPost<ResultStatus>(string.Format("/api/1.0/meta/dataset/{0}", datasetId), metadataUpdate);
 		}
 
-		public Task<RequestStatusResult> VerifyDataset(string id, DateTime? publicationDate = null, string source = null, string refUrl = null, DateTime? nextReleaseDate = null)
+		public Task<ResultStatus> VerifyDataset(string id, DateTime? publicationDate = null, string source = null, string refUrl = null, DateTime? nextReleaseDate = null)
 		{
-			return ApiPost<RequestStatusResult>("/api/1.0/meta/verifydataset", new
+			return ApiPost<ResultStatus>("/api/1.0/meta/verifydataset", new
 			{
 				id = id,
 				publicationDate = publicationDate,
