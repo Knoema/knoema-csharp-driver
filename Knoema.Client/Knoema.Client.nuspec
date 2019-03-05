@@ -12,7 +12,9 @@
         <tags>knoema csharp</tags>
         <iconUrl>http://knoema.com/favicon.png</iconUrl>
 				<dependencies>
-					<dependency id="Newtonsoft.Json" version="5.0.5" />
+          <dependency id="Newtonsoft.Json" version="12.0.1" />
+          <dependency id="Deedle" version="1.2.5" />
+          <dependency id="FShart.Core" version="4.6.2" />
 				</dependencies>
 		</metadata>
 	</package>
