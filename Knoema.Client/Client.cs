@@ -310,6 +310,11 @@ namespace Knoema
 			return UploadStatus(result.Id);
 		}
 
+		public Task<VerifyDatasetResult> UpdateDatasetMetadata(string datasetId, MetadataUpdate metadataUpdate)
+		{
+			return ApiPost<VerifyDatasetResult>(string.Format("/api/1.0/meta/dataset/{0}", datasetId), metadataUpdate);
+		}
+
 		public Task<VerifyDatasetResult> VerifyDataset(string id, DateTime? publicationDate = null, string source = null, string refUrl = null, DateTime? nextReleaseDate = null)
 		{
 			return ApiPost<VerifyDatasetResult>("/api/1.0/meta/verifydataset", new
