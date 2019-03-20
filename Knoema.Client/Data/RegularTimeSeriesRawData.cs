@@ -12,5 +12,6 @@ namespace Knoema.Data
 		public float Scale { get; set; }
 		public string Mnemonics { get; set; }
 		public IEnumerable<object> Values { get; set; }
+		public string TsKey { get; set; }
 	}
 }
