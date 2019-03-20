@@ -19,10 +19,12 @@ namespace Knoema.Data
 		{
 			Dimensions = _dimensions.Select(pair =>
 			{
+				if (pair.Value.Type != JTokenType.Object || pair.Value["key"] == null || pair.Value["name"] == null)
+					return null;
 				var value = pair.Value.ToObject<DimensionItem>();
 				value.DimensionId = pair.Key;
 				return value;
-			});
+			}).Where(d => d != null);
 			_dimensions = null;
 		}
 	}
