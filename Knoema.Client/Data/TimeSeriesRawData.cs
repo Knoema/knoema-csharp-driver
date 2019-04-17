@@ -9,7 +9,7 @@ namespace Knoema.Data
 	public abstract class TimeSeriesRawData
 	{
 		[JsonExtensionData]
-		private IDictionary<string, JToken> _dimensions;
+		private IDictionary<string, JToken> _extensionData;
 
 		public IEnumerable<DimensionItem> Dimensions { get; set; }
 		public Dictionary<string, string> TimeSeriesAttributes { get; set; }
@@ -17,13 +17,19 @@ namespace Knoema.Data
 		[OnDeserialized]
 		internal void OnDeserialized(StreamingContext context)
 		{
-			Dimensions = _dimensions.Select(pair =>
+			var dimensions = new List<DimensionItem>();
+			foreach(var pair in _extensionData)
 			{
-				var value = pair.Value.ToObject<DimensionItem>();
+				var valueObj = pair.Value;
+				if (valueObj.Type != JTokenType.Object || valueObj["key"] == null || valueObj["name"] == null)
+					continue;
+				var value = valueObj.ToObject<DimensionItem>();
 				value.DimensionId = pair.Key;
-				return value;
-			});
-			_dimensions = null;
+				dimensions.Add(value);
+			}
+
+			Dimensions = dimensions;
+			_extensionData = null;
 		}
 	}
 }
