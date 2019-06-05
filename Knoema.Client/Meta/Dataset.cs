@@ -13,6 +13,7 @@ namespace Knoema.Meta
 		public string Ref { get; set; }
 		public string Type { get; set; }
 		public string HasGeoDimension { get; set; }
+		public DatasetUpdatePriority? UpdatePriority { get; set; }
 		public string RegionDimensionId { get; set; }
 		public DateTime? PublicationDate { get; set; }
 		public DateTime? AccessedOn { get; set; }

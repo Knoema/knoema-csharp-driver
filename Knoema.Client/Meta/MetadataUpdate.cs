@@ -11,5 +11,6 @@ namespace Knoema.Meta
 		public DateTime? PublicationDate { get; set; }
 		public DateTime? AccessedOn { get; set; }
 		public DateTime? NextReleaseDate { get; set; }
+		public DatasetUpdatePriority? UpdatePriority { get; set; }
 	}
 }
