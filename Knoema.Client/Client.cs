@@ -555,7 +555,7 @@ namespace Knoema
 				for (var i = 0; i < files.Length; i++)
 				{
 					var file = files[i];
-					fileStreams[i] = File.Create(destinationFolder + '\\' + file.Name);
+					fileStreams[i] = File.Create(Path.Combine(destinationFolder, file.Name));
 					fileNames[i] = file.Name;
 					urls[i] = file.Url;
 				}
