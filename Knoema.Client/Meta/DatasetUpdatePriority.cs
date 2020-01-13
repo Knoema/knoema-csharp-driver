@@ -8,6 +8,7 @@ namespace Knoema.Meta
 		Medium = 1,
 		Low = 2,
 		[Description("On-demand")]
-		OnDemand = 3
+		OnDemand = 3,
+		Discontinued = 4
 	}
 }
