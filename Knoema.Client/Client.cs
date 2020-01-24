@@ -35,6 +35,7 @@ namespace Knoema
 		private string _searchCommunityId;
 
 		private CookieContainer _cookies = new CookieContainer();
+		private HttpClient _client;
 
 		private const string AuthProtoVersion = "1.2";
 		private const int DefaultHttpTimeout = 600 * 1000;
@@ -93,28 +94,31 @@ namespace Knoema
 
 		private HttpClient GetApiClient()
 		{
+			if (_client == null)
+			{
 #if NET45
-			var clientHandler = new WebRequestHandler();
+				var clientHandler = new WebRequestHandler();
 #else
-			var clientHandler = new HttpClientHandler();
+				var clientHandler = new HttpClientHandler();
 #endif
 
-			if (_ignoreCertErrors)
+				if (_ignoreCertErrors)
 #if NET45
-				clientHandler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+					clientHandler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 #else
-				clientHandler.ServerCertificateCustomValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+					clientHandler.ServerCertificateCustomValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 #endif
 
-			clientHandler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-			clientHandler.CookieContainer = _cookies;
+				clientHandler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+				clientHandler.CookieContainer = _cookies;
 
-			var client = new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(HttpTimeout) };
+				_client = new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(HttpTimeout) };
+			}
 
 			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
-				client.DefaultRequestHeaders.Add("Authorization", GetAuthorizationHeaderValue(_clientId, _clientSecret));
-
-			return client;
+				_client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Authorization", GetAuthorizationHeaderValue(_clientId, _clientSecret));
+						
+			return _client;
 		}
 
 		private Uri MakeUri(string path, string query = null)
