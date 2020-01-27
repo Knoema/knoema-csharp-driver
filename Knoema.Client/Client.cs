@@ -118,7 +118,7 @@ namespace Knoema
 		{
 			var result = _client.Value;
 			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
-				result.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Authorization", GetAuthorizationHeaderValue(_clientId, _clientSecret));
+				result.DefaultRequestHeaders.Authorization = GetAuthorizationHeaderValue(_clientId, _clientSecret);
 			return result;
 		}
 
@@ -360,7 +360,7 @@ namespace Knoema
 			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, _token, "/api/1.0/search/timeseries", _scheme, parameters));
 
 			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
-				message.Headers.Add("Authorization", GetAuthorizationHeaderValue(_clientId, _clientSecret));
+				message.Headers.Authorization = GetAuthorizationHeaderValue(_clientId, _clientSecret);
 
 			var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
 
@@ -402,7 +402,7 @@ namespace Knoema
 			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, _token, "/api/1.0/search", _scheme, parameters));
 
 			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
-				message.Headers.Add("Authorization", GetAuthorizationHeaderValue(_clientId, _clientSecret));
+				message.Headers.Authorization = GetAuthorizationHeaderValue(_clientId, _clientSecret);
 
 			var sendAsyncResp = await GetAuthorizedApiClient().SendAsync(message);
 			sendAsyncResp.EnsureSuccessStatusCode();
@@ -410,11 +410,11 @@ namespace Knoema
 			return JsonConvert.DeserializeObject<SearchTimeSeriesResponse>(strRead);
 		}
 
-		private static string GetAuthorizationHeaderValue(string clientId, string clientSecret)
+		private static AuthenticationHeaderValue GetAuthorizationHeaderValue(string clientId, string clientSecret)
 		{
-			return string.Format("Knoema {0}:{1}:{2}", clientId,
+			return new AuthenticationHeaderValue("Knoema", string.Format("{0}:{1}:{2}", clientId,
 					Convert.ToBase64String(new HMACSHA1(Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-HH", CultureInfo.InvariantCulture))).ComputeHash(Encoding.UTF8.GetBytes(clientSecret))),
-					AuthProtoVersion);
+					AuthProtoVersion));
 		}
 
 		private static Uri GetUri(string host, string token, string path, string scheme, Dictionary<string, string> parameters = null)
