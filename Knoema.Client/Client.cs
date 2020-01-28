@@ -35,6 +35,7 @@ namespace Knoema
 		private string _searchCommunityId;
 
 		private CookieContainer _cookies = new CookieContainer();
+		private Lazy<HttpClient> _client;
 
 		private const string AuthProtoVersion = "1.2";
 		private const int DefaultHttpTimeout = 600 * 1000;
@@ -50,6 +51,7 @@ namespace Knoema
 				_scheme = Uri.UriSchemeHttp;
 
 			_ignoreCertErrors = ignoreCertErrors;
+			_client = new Lazy<HttpClient>(() => GetApiClient());
 		}
 
 		public Client(string host, bool ignoreCertErrors = false, string scheme = "")
@@ -94,27 +96,30 @@ namespace Knoema
 		private HttpClient GetApiClient()
 		{
 #if NET45
-			var clientHandler = new WebRequestHandler();
+				var clientHandler = new WebRequestHandler();
 #else
-			var clientHandler = new HttpClientHandler();
+				var clientHandler = new HttpClientHandler();
 #endif
 
-			if (_ignoreCertErrors)
+				if (_ignoreCertErrors)
 #if NET45
-				clientHandler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+					clientHandler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 #else
-				clientHandler.ServerCertificateCustomValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+					clientHandler.ServerCertificateCustomValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 #endif
 
-			clientHandler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-			clientHandler.CookieContainer = _cookies;
+				clientHandler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+				clientHandler.CookieContainer = _cookies;
 
-			var client = new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(HttpTimeout) };
+				return new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(HttpTimeout) };
+		}
 
+		private HttpClient GetAuthorizedApiClient()
+		{
+			var result = _client.Value;
 			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
-				client.DefaultRequestHeaders.Add("Authorization", GetAuthorizationHeaderValue(_clientId, _clientSecret));
-
-			return client;
+				result.DefaultRequestHeaders.Authorization = GetAuthorizationHeaderValue(_clientId, _clientSecret);
+			return result;
 		}
 
 		private Uri MakeUri(string path, string query = null)
@@ -146,7 +151,7 @@ namespace Knoema
 
 		private async Task<T> ApiGet<T>(string path, string query = null)
 		{
-			var response = await GetApiClient().GetAsync(MakeUri(path, query));
+			var response = await GetAuthorizedApiClient().GetAsync(MakeUri(path, query));
 			EnsureSuccessApiCall(response);
 			var content = await response.Content.ReadAsStringAsync();
 			return JsonConvert.DeserializeObject<T>(content);
@@ -154,7 +159,7 @@ namespace Knoema
 
 		private async Task<T> ApiPost<T>(string path, HttpContent content)
 		{
-			var postResponse = await GetApiClient().PostAsync(MakeUri(path, null), content);
+			var postResponse = await GetAuthorizedApiClient().PostAsync(MakeUri(path, null), content);
 			EnsureSuccessApiCall(postResponse);
 			var readString = await postResponse.Content.ReadAsStringAsync();
 			return JsonConvert.DeserializeObject<T>(readString);
@@ -355,13 +360,13 @@ namespace Knoema
 			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, _token, "/api/1.0/search/timeseries", _scheme, parameters));
 
 			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
-				message.Headers.Add("Authorization", GetAuthorizationHeaderValue(_clientId, _clientSecret));
+				message.Headers.Authorization = GetAuthorizationHeaderValue(_clientId, _clientSecret);
 
 			var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
 
 			message.Content = content;
 
-			var sendAsyncResp = await GetApiClient().SendAsync(message);
+			var sendAsyncResp = await GetAuthorizedApiClient().SendAsync(message);
 			sendAsyncResp.EnsureSuccessStatusCode();
 			var strRead = await sendAsyncResp.Content.ReadAsStringAsync();
 			var result = JsonConvert.DeserializeObject<Response>(strRead);
@@ -397,19 +402,19 @@ namespace Knoema
 			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, _token, "/api/1.0/search", _scheme, parameters));
 
 			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
-				message.Headers.Add("Authorization", GetAuthorizationHeaderValue(_clientId, _clientSecret));
+				message.Headers.Authorization = GetAuthorizationHeaderValue(_clientId, _clientSecret);
 
-			var sendAsyncResp = await GetApiClient().SendAsync(message);
+			var sendAsyncResp = await GetAuthorizedApiClient().SendAsync(message);
 			sendAsyncResp.EnsureSuccessStatusCode();
 			var strRead = await sendAsyncResp.Content.ReadAsStringAsync();
 			return JsonConvert.DeserializeObject<SearchTimeSeriesResponse>(strRead);
 		}
 
-		private static string GetAuthorizationHeaderValue(string clientId, string clientSecret)
+		private static AuthenticationHeaderValue GetAuthorizationHeaderValue(string clientId, string clientSecret)
 		{
-			return string.Format("Knoema {0}:{1}:{2}", clientId,
+			return new AuthenticationHeaderValue("Knoema", string.Format("{0}:{1}:{2}", clientId,
 					Convert.ToBase64String(new HMACSHA1(Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-HH", CultureInfo.InvariantCulture))).ComputeHash(Encoding.UTF8.GetBytes(clientSecret))),
-					AuthProtoVersion);
+					AuthProtoVersion));
 		}
 
 		private static Uri GetUri(string host, string token, string path, string scheme, Dictionary<string, string> parameters = null)
