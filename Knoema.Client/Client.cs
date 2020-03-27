@@ -30,11 +30,11 @@ namespace Knoema
 		private readonly string _clientSecret;
 		private readonly string _token;
 		private readonly bool _ignoreCertErrors;
+		private readonly CookieContainer _cookies = new CookieContainer();
 
 		private string _searchHost;
 		private string _searchCommunityId;
 
-		private CookieContainer _cookies = new CookieContainer();
 		private Lazy<HttpClient> _client;
 
 		private const string AuthProtoVersion = "1.2";
@@ -46,9 +46,7 @@ namespace Knoema
 		{
 			HttpTimeout = DefaultHttpTimeout;
 
-			_scheme = scheme;
-			if (string.IsNullOrEmpty(_scheme))
-				_scheme = Uri.UriSchemeHttp;
+			_scheme = string.IsNullOrWhiteSpace(scheme) ? Uri.UriSchemeHttp : scheme;
 
 			_ignoreCertErrors = ignoreCertErrors;
 			_client = new Lazy<HttpClient>(() => GetApiClient());
@@ -58,7 +56,7 @@ namespace Knoema
 			: this(ignoreCertErrors, scheme)
 		{
 			if (string.IsNullOrEmpty(host))
-				throw new ArgumentNullException("host");
+				throw new ArgumentException(nameof(host));
 
 			_host = host;
 		}
@@ -67,10 +65,10 @@ namespace Knoema
 			: this(ignoreCertErrors, scheme)
 		{
 			if (string.IsNullOrEmpty(host))
-				throw new ArgumentNullException("host");
+				throw new ArgumentException(nameof(host));
 
 			if (string.IsNullOrEmpty(token))
-				throw new ArgumentNullException("token");
+				throw new ArgumentException(nameof(token));
 
 			_host = host;
 			_token = token;
@@ -80,96 +78,79 @@ namespace Knoema
 			: this(ignoreCertErrors, scheme)
 		{
 			if (string.IsNullOrEmpty(host))
-				throw new ArgumentNullException("host");
+				throw new ArgumentException(nameof(host));
 
 			if (string.IsNullOrEmpty(clientId))
-				throw new ArgumentNullException("clientId");
+				throw new ArgumentException(nameof(clientId));
 
 			if (clientSecret == null)
-				throw new ArgumentNullException("clientSecret");
+				throw new ArgumentNullException(nameof(clientSecret));
 
-			_host = host;
-			_clientId = clientId;
-			_clientSecret = clientSecret;
+			_host = host.Trim();
+			_clientId = clientId.Trim();
+			_clientSecret = clientSecret.Trim();
 		}
 
 		private HttpClient GetApiClient()
 		{
 #if NET45
-				var clientHandler = new WebRequestHandler();
+			var clientHandler = new WebRequestHandler();
 #else
-				var clientHandler = new HttpClientHandler();
+			var clientHandler = new HttpClientHandler();
 #endif
 
-				if (_ignoreCertErrors)
+			if (_ignoreCertErrors)
 #if NET45
-					clientHandler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+				clientHandler.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 #else
-					clientHandler.ServerCertificateCustomValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+				clientHandler.ServerCertificateCustomValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
 #endif
 
-				clientHandler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
-				clientHandler.CookieContainer = _cookies;
+			clientHandler.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+			clientHandler.CookieContainer = _cookies;
 
-				return new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(HttpTimeout) };
+			return new HttpClient(clientHandler) { Timeout = TimeSpan.FromMilliseconds(HttpTimeout) };
 		}
 
-		private HttpClient GetAuthorizedApiClient()
+		private Task<HttpResponseMessage> ProcessRequest(HttpRequestMessage request)
 		{
-			var result = _client.Value;
 			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
-				result.DefaultRequestHeaders.Authorization = GetAuthorizationHeaderValue(_clientId, _clientSecret);
-			return result;
-		}
-
-		private Uri MakeUri(string path, string query = null)
-		{
-			var builder = new UriBuilder(_scheme, _host);
-
-			if (!string.IsNullOrEmpty(path))
-				builder.Path = path;
-
-			if (!string.IsNullOrEmpty(_token))
 			{
-				if (!string.IsNullOrEmpty(query))
-					query += '&';
-				query += "access_token=" + _token;
+				var base64hash = Convert.ToBase64String(new HMACSHA1(Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-HH", CultureInfo.InvariantCulture))).ComputeHash(Encoding.UTF8.GetBytes(_clientSecret)));
+				request.Headers.Authorization = new AuthenticationHeaderValue("Knoema", $"{_clientId}:{base64hash}:{AuthProtoVersion}");
 			}
 
-			if (!string.IsNullOrEmpty(_clientId) && string.IsNullOrEmpty(_clientSecret))
-			{
-				if (!string.IsNullOrEmpty(query))
-					query += '&';
-				query += "client_id=" + _clientId;
-			}
-
-			if (!string.IsNullOrEmpty(query))
-				builder.Query = query;
-
-			return builder.Uri;
+			return _client.Value.SendAsync(request);
 		}
 
-		private async Task<T> ApiGet<T>(string path, string query = null)
+		private async Task<T> ApiGet<T>(string path, Dictionary<string, string> parameters = null)
 		{
-			var response = await GetAuthorizedApiClient().GetAsync(MakeUri(path, query));
+			var uri = GetUri(_host, path, parameters);
+			var request = new HttpRequestMessage(HttpMethod.Get, uri);
+			var response = await ProcessRequest(request);
 			EnsureSuccessApiCall(response);
-			var content = await response.Content.ReadAsStringAsync();
-			return JsonConvert.DeserializeObject<T>(content);
+			var responseContent = await response.Content.ReadAsStringAsync();
+			return JsonConvert.DeserializeObject<T>(responseContent);
 		}
 
 		private async Task<T> ApiPost<T>(string path, HttpContent content)
 		{
-			var postResponse = await GetAuthorizedApiClient().PostAsync(MakeUri(path, null), content);
-			EnsureSuccessApiCall(postResponse);
-			var readString = await postResponse.Content.ReadAsStringAsync();
-			return JsonConvert.DeserializeObject<T>(readString);
+			var uri = GetUri(_host, path);
+			var request = new HttpRequestMessage(HttpMethod.Post, uri)
+			{
+				Content = content
+			};
+			var response = await ProcessRequest(request);
+			EnsureSuccessApiCall(response);
+			var responseContent = await response.Content.ReadAsStringAsync();
+			return JsonConvert.DeserializeObject<T>(responseContent);
 		}
 
 		private static void EnsureSuccessApiCall(HttpResponseMessage response)
 		{
 			if (!response.IsSuccessStatusCode)
 			{
-				var error = "";
+				var error = string.Empty;
 				if (response.Content != null)
 				{
 					error = response.Content.ReadAsStringAsync().Result;
@@ -200,22 +181,24 @@ namespace Knoema
 			if (string.IsNullOrEmpty(source) && string.IsNullOrEmpty(topic) && string.IsNullOrEmpty(region))
 				return ApiGet<IEnumerable<Dataset>>("/api/1.0/meta/dataset");
 
-			return ApiPost<IEnumerable<Dataset>>("/api/1.0/meta/dataset", new Dictionary<string, string>()
-					{
-						{"source", source},
-						{"topic", topic},
-						{"region", region}
-					});
+			var parameters = new Dictionary<string, string>()
+			{
+				{ "source", source },
+				{ "topic", topic },
+				{ "region", region }
+			};
+
+			return ApiPost<IEnumerable<Dataset>>("/api/1.0/meta/dataset", parameters);
 		}
 
 		public Task<Dataset> GetDataset(string id)
 		{
-			return ApiGet<Dataset>(string.Format("/api/1.0/meta/dataset/{0}", id));
+			return ApiGet<Dataset>($"/api/1.0/meta/dataset/{id}");
 		}
 
 		public Task<Dimension> GetDatasetDimension(string dataset, string dimension)
 		{
-			return ApiGet<Dimension>(string.Format("/api/1.0/meta/dataset/{0}/dimension/{1}", dataset, dimension));
+			return ApiGet<Dimension>($"/api/1.0/meta/dataset/{dataset}/dimension/{dimension}");
 		}
 
 		public Task<PivotResponse> GetData(PivotRequest pivot)
@@ -235,7 +218,7 @@ namespace Knoema
 
 		public Task<RegularTimeSeriesRawDataResponse> GetDataStreaming(string token)
 		{
-			return ApiGet<RegularTimeSeriesRawDataResponse>("/api/1.0/data/raw/", string.Format("continuationToken={0}", token));
+			return ApiGet<RegularTimeSeriesRawDataResponse>("/api/1.0/data/raw/", new Dictionary<string, string> { { "continuationToken", token } });
 		}
 
 		public Task<FlatTimeSeriesRawDataResponse> GetFlatDataBegin(PivotRequest pivot)
@@ -245,7 +228,7 @@ namespace Knoema
 
 		public Task<FlatTimeSeriesRawDataResponse> GetFlatDataStreaming(string token)
 		{
-			return ApiGet<FlatTimeSeriesRawDataResponse>("/api/1.0/data/raw/", string.Format("continuationToken={0}", token));
+			return ApiGet<FlatTimeSeriesRawDataResponse>("/api/1.0/data/raw/", new Dictionary<string, string> { { "continuationToken", token } });
 		}
 
 		public Task<IEnumerable<UnitMember>> GetUnits()
@@ -255,7 +238,7 @@ namespace Knoema
 
 		public Task<IEnumerable<TimeSeriesItem>> GetTimeSeriesList(string datasetId, FullDimensionRequest request)
 		{
-			return ApiPost<IEnumerable<TimeSeriesItem>>(string.Format("/api/1.0/data/dataset/{0}", datasetId), request);
+			return ApiPost<IEnumerable<TimeSeriesItem>>($"/api/1.0/data/dataset/{datasetId}", request);
 		}
 
 		public async Task<PostResult> UploadPost(string fileName)
@@ -274,7 +257,12 @@ namespace Knoema
 
 		public Task<VerifyResult> UploadVerify(string filePath, string existingDatasetIdToModify = null)
 		{
-			return ApiGet<VerifyResult>("/api/1.0/upload/verify", string.Format("filePath={0}&datasetId={1}", filePath, existingDatasetIdToModify));
+			var parameters = new Dictionary<string, string>
+			{
+				{ "filePath", filePath },
+				{ "datasetId", existingDatasetIdToModify }
+			};
+			return ApiGet<VerifyResult>("/api/1.0/upload/verify", parameters);
 		}
 
 		public Task<UploadResult> UploadSubmit(DatasetUpload upload)
@@ -284,10 +272,10 @@ namespace Knoema
 
 		public Task<UploadResult> UploadStatus(int uploadId)
 		{
-			return ApiGet<UploadResult>("/api/1.0/upload/status", string.Format("id={0}", uploadId));
+			return ApiGet<UploadResult>("/api/1.0/upload/status", new Dictionary<string, string> { { "id", uploadId.ToString() } });
 		}
 
-		public Task<UploadResult> UploadDataset(string filename, string datasetName)
+		public async Task<UploadResult> UploadDataset(string filename, string datasetName)
 		{
 			var postResult = UploadPost(filename).Result;
 			if (!postResult.Successful)
@@ -308,16 +296,14 @@ namespace Knoema
 
 			var result = UploadSubmit(upload).Result;
 			while (UploadStatus(result.Id).Result.Status == "in progress")
-			{
-				System.Threading.Thread.Sleep(5000);
-			}
+				await Task.Delay(5000);
 
-			return UploadStatus(result.Id);
+			return await UploadStatus(result.Id);
 		}
 
 		public Task<VerifyDatasetResult> UpdateDatasetMetadata(string datasetId, MetadataUpdate metadataUpdate)
 		{
-			return ApiPost<VerifyDatasetResult>(string.Format("/api/1.0/meta/dataset/{0}", datasetId), metadataUpdate);
+			return ApiPost<VerifyDatasetResult>($"/api/1.0/meta/dataset/{datasetId}", metadataUpdate);
 		}
 
 		public Task<VerifyDatasetResult> VerifyDataset(string id, DateTime? publicationDate = null, string source = null, string refUrl = null, DateTime? nextReleaseDate = null)
@@ -334,7 +320,7 @@ namespace Knoema
 
 		public Task<DateRange> GetDatasetDateRange(string datasetId)
 		{
-			return ApiGet<DateRange>(string.Format("/api/1.0/meta/dataset/{0}/daterange", datasetId));
+			return ApiGet<DateRange>($"/api/1.0/meta/dataset/{datasetId}/daterange");
 		}
 
 		public async Task<Response> SearchTimeseries(Request request, string lang = null)
@@ -357,16 +343,13 @@ namespace Knoema
 				parameters.Add("lang", lang);
 
 
-			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, _token, "/api/1.0/search/timeseries", _scheme, parameters));
-
-			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
-				message.Headers.Authorization = GetAuthorizationHeaderValue(_clientId, _clientSecret);
+			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, "/api/1.0/search/timeseries", parameters));
 
 			var content = new StringContent(JsonConvert.SerializeObject(request), Encoding.UTF8, "application/json");
 
 			message.Content = content;
 
-			var sendAsyncResp = await GetAuthorizedApiClient().SendAsync(message);
+			var sendAsyncResp = await ProcessRequest(message);
 			sendAsyncResp.EnsureSuccessStatusCode();
 			var strRead = await sendAsyncResp.Content.ReadAsStringAsync();
 			var result = JsonConvert.DeserializeObject<Response>(strRead);
@@ -399,37 +382,33 @@ namespace Knoema
 			if (lang != null)
 				parameters.Add("lang", lang);
 
-			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, _token, "/api/1.0/search", _scheme, parameters));
+			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_searchHost, "/api/1.0/search", parameters));
 
-			if (!string.IsNullOrEmpty(_clientId) && !string.IsNullOrEmpty(_clientSecret))
-				message.Headers.Authorization = GetAuthorizationHeaderValue(_clientId, _clientSecret);
-
-			var sendAsyncResp = await GetAuthorizedApiClient().SendAsync(message);
+			var sendAsyncResp = await ProcessRequest(message);
 			sendAsyncResp.EnsureSuccessStatusCode();
 			var strRead = await sendAsyncResp.Content.ReadAsStringAsync();
 			return JsonConvert.DeserializeObject<SearchTimeSeriesResponse>(strRead);
 		}
 
-		private static AuthenticationHeaderValue GetAuthorizationHeaderValue(string clientId, string clientSecret)
+		private Uri GetUri(string host, string path, Dictionary<string, string> parameters = null)
 		{
-			return new AuthenticationHeaderValue("Knoema", string.Format("{0}:{1}:{2}", clientId,
-					Convert.ToBase64String(new HMACSHA1(Encoding.UTF8.GetBytes(DateTime.UtcNow.ToString("dd-MM-yy-HH", CultureInfo.InvariantCulture))).ComputeHash(Encoding.UTF8.GetBytes(clientSecret))),
-					AuthProtoVersion));
-		}
-
-		private static Uri GetUri(string host, string token, string path, string scheme, Dictionary<string, string> parameters = null)
-		{
-			if (!string.IsNullOrEmpty(token))
+			if (!string.IsNullOrEmpty(_token))
 			{
 				if (parameters == null)
 					parameters = new Dictionary<string, string>();
-				parameters.Add("access_token", token);
+				parameters.Add("access_token", _token);
 			}
-			var builder = new UriBuilder(scheme, host)
+			if (!string.IsNullOrEmpty(_clientId) && string.IsNullOrEmpty(_clientSecret))
+			{
+				if (parameters == null)
+					parameters = new Dictionary<string, string>();
+				parameters.Add("client_id", _clientId);
+			}
+			var builder = new UriBuilder(_scheme, host)
 			{
 				Path = path,
 				Query = parameters != null ?
-					string.Join("&", parameters.Select(pair => string.Format("{0}={1}", pair.Key, WebUtility.UrlEncode(pair.Value)))) :
+					string.Join("&", parameters.Select(pair => $"{WebUtility.UrlEncode(pair.Key)}={WebUtility.UrlEncode(pair.Value)}")) :
 					string.Empty
 			};
 			return builder.Uri;
@@ -438,7 +417,7 @@ namespace Knoema
 		public Task<T> GetTaskResult<T>(TaskResponse taskResponse) where T : TaskResult
 		{
 			if (taskResponse.ProxyData == null && taskResponse.TaskKey.HasValue)
-				return ApiGet<T>("/api/1.0/meta/taskresult", string.Format("taskKey={0}", taskResponse.TaskKey.Value));
+				return ApiGet<T>("/api/1.0/meta/taskresult", new Dictionary<string, string> { { "taskKey", taskResponse.TaskKey.Value.ToString() } });
 
 			return ApiPost<T>("/api/1.0/meta/taskresult", taskResponse);
 		}
@@ -454,7 +433,7 @@ namespace Knoema
 				i++;
 				if (i >= maxWaitCount)
 					throw new Exception("Maximum wait count reached");
-				Thread.Sleep(spinDelayInSeconds * 1000);
+				await Task.Delay(TimeSpan.FromSeconds(spinDelayInSeconds));
 			}
 
 			if (taskResult.Status == Meta.TaskStatus.Cancelled)
