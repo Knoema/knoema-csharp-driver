@@ -30,13 +30,12 @@ namespace Knoema
 		private readonly string _clientSecret;
 		private readonly string _token;
 		private readonly bool _ignoreCertErrors;
+		private readonly Lazy<HttpClient> _client;
 		private readonly CookieContainer _cookies = new CookieContainer();
 
 		private string _searchHost;
 		private string _searchCommunityId;
-
-		private Lazy<HttpClient> _client;
-
+		
 		private const string AuthProtoVersion = "1.2";
 		private const int DefaultHttpTimeout = 600 * 1000;
 
