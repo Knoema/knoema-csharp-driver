@@ -175,6 +175,31 @@ namespace Knoema
 			return ApiPost<T>(path, content);
 		}
 
+		public Task<IEnumerable<Dataset>> GetDatasetStatistics(DatasetsStatisticsRequest request)
+		{
+			return ApiPost<IEnumerable<Dataset>>("/api/1.0/meta/DatasetsStats", request);
+		}
+
+		public Task<IEnumerable<ResourceUsage>> GetResourceUsage(string resourceId)
+		{
+			return ApiGet<IEnumerable<ResourceUsage>>($"/api/1.0/frontend/ResourceUsage/{resourceId}");
+		}
+
+		public Task<IReadOnlyCollection<Resource>> GetResourcesByIds(IEnumerable<string> ids)
+		{
+			return ApiPost<IReadOnlyCollection<Resource>>("/api/1.0/frontend/Resources", ids);
+		}
+
+		public Task<IEnumerable<ResourceViewsInfo>> GetResourcesViews(IEnumerable<string> ids)
+		{
+			return ApiPost<IEnumerable<ResourceViewsInfo>>("/api/1.0/frontend/ResourceStatistics",new { ResourceIds = ids });
+		}
+
+		public Task<IEnumerable<string>> GetFeatures()
+		{
+			return ApiGet<IEnumerable<string>>("/api/1.0/me/features");
+		}
+
 		public Task<IEnumerable<Dataset>> ListDatasets(string source = null, string topic = null, string region = null)
 		{
 			if (string.IsNullOrEmpty(source) && string.IsNullOrEmpty(topic) && string.IsNullOrEmpty(region))
