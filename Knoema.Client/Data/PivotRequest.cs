@@ -10,6 +10,7 @@ namespace Knoema.Data
 		public List<PivotRequestTimeSeriesAttributes> TimeSeriesAttributes { get; set; }
 		public string Dataset { get; set; }
 		public List<string> Frequencies { get; set; }
+		public string TimeNormalization { get; set; }
 
 		public PivotRequest()
 		{
