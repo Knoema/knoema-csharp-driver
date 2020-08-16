@@ -1,10 +1,6 @@
-﻿using System.Collections.Generic;
-
-namespace Knoema.Data
+﻿namespace Knoema.Data
 {
-	public class FlatTimeSeriesRawDataResponse
+	public class FlatTimeSeriesRawDataResponse : StreamingDataResponse<FlatTimeSeriesRawData>
 	{
-		public string ContinuationToken { get; set; }
-		public IEnumerable<FlatTimeSeriesRawData> Data { get; set; }
 	}
 }

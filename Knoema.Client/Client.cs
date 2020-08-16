@@ -230,6 +230,35 @@ namespace Knoema
 			return ApiGet<FlatTimeSeriesRawDataResponse>("/api/1.0/data/raw/", new Dictionary<string, string> { { "continuationToken", token } });
 		}
 
+
+#if NET45
+#else
+		public IAsyncEnumerable<RegularTimeSeriesRawData> GetDataStreamingAsync(PivotRequest pivot)
+		{
+			return GetDataStreamingResponseAsync<RegularTimeSeriesRawData>(pivot);
+		}
+		public IAsyncEnumerable<FlatTimeSeriesRawData> GetFlatDataStreamingAsync(PivotRequest pivot)
+		{
+			return GetDataStreamingResponseAsync<FlatTimeSeriesRawData>(pivot);
+		}
+
+		private async IAsyncEnumerable<T> GetDataStreamingResponseAsync<T>(PivotRequest pivot)
+		{
+			var response = await ApiPost<StreamingDataResponse<T>>("/api/1.0/data/raw/", pivot);
+			foreach (var dataItem in response.Data)
+				yield return dataItem;
+
+			var token = response.ContinuationToken;
+			while (!string.IsNullOrEmpty(token))
+			{
+				response = await ApiGet<StreamingDataResponse<T>>("/api/1.0/data/raw/", new Dictionary<string, string> { { "continuationToken", token } });
+				foreach (var dataItem in response.Data)
+					yield return dataItem;
+				token = response.ContinuationToken;
+			}
+		}
+#endif
+
 		public Task<IEnumerable<UnitMember>> GetUnits()
 		{
 			return ApiGet<IEnumerable<UnitMember>>("/api/1.0/meta/units");
