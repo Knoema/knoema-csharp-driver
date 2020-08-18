@@ -578,5 +578,11 @@ namespace Knoema
 
 			return fileNames;
 		}
+
+		public Task<IEnumerable<DataOpsDatasetViewModel>> GetDatasetStats(DataOpsDatasetsRequest request)
+		{
+			var datasets = ApiPost<IEnumerable<DataOpsDatasetViewModel>>("/api/1.0/meta/DatasetsStats", request);
+			return datasets;
+		}
 	}
 }
