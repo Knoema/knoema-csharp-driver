@@ -11,13 +11,11 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-
 using Knoema.Data;
 using Knoema.Meta;
 using Knoema.Search;
 using Knoema.Search.TimeseriesSearch;
 using Knoema.Upload;
-
 using Newtonsoft.Json;
 
 namespace Knoema
@@ -581,8 +579,22 @@ namespace Knoema
 
 		public Task<IEnumerable<DataOpsDatasetViewModel>> GetDatasetStats(DataOpsDatasetsRequest request)
 		{
-			var datasets = ApiPost<IEnumerable<DataOpsDatasetViewModel>>("/api/1.0/meta/DatasetsStats", request);
-			return datasets;
+			return ApiPost<IEnumerable<DataOpsDatasetViewModel>>("/api/1.0/meta/DatasetsStats", request);
+		}
+
+		public Task<IReadOnlyCollection<Resource>> GetResources(IEnumerable<string> ids)
+		{
+			return ApiPost<IReadOnlyCollection<Resource>>("/api/1.0/frontend/Resources", new StringContent(JsonConvert.SerializeObject(new { ids }), Encoding.UTF8, "application/json"));
+		}
+
+		public Task<IEnumerable<ResourceUsage>> GetResourceUsage(string datasetId)
+		{
+			return ApiGet<IEnumerable<ResourceUsage>>($"/api/1.0/frontend/ResourceUsage/{datasetId}");
+		}
+
+		public Task<IReadOnlyCollection<ResourceStatistics>> GetResourceStatistics(IEnumerable<string> ids)
+		{
+			return ApiPost<IReadOnlyCollection<ResourceStatistics>>("/api/1.0/frontend/ResourceStatistics", new StringContent(JsonConvert.SerializeObject(new { ResourceIds = ids }), Encoding.UTF8, "application/json"));
 		}
 	}
 }

@@ -1,12 +1,13 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Knoema.Meta
 {
 	[JsonConverter(typeof(DatasetConverter))]
 	public class Dataset
 	{
+		public long Key { get; set; }
 		public string Id { get; set; }
 		public string Name { get; set; }
 		public string Description { get; set; }
@@ -19,6 +20,8 @@ namespace Knoema.Meta
 		public DateTime? AccessedOn { get; set; }
 		public DateTime? NextReleaseDate { get; set; }
 		public DateTime LastUpdatedOn { get; set; }
+		public DateTime? ExpectedUpdateDate { get; set; }
+		public DatasetSource Source { get; set; }
 		public IEnumerable<Dimension> Dimensions { get; set; }
 		public IEnumerable<Column> Columns { get; set; }
 		public IEnumerable<TimeSeriesAttribute> TimeSeriesAttributes { get; set; }
