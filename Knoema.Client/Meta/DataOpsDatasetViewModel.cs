@@ -28,9 +28,9 @@ namespace Knoema.Meta
 
 		public bool IsAtlas { get; set; }
 
-		public DatasetUpdatePriority? UpdatePriority { get; }
+		public DatasetUpdatePriority? UpdatePriority { get; set; }
 
-		public string Ref { get; }
+		public string Ref { get; set; }
 
 		public DateTime? PublicationDate { get; set; }
 

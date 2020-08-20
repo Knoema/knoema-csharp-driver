@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Knoema.Meta
 {
@@ -23,7 +22,7 @@ namespace Knoema.Meta
 
 		public AutoFilter? Auto { get; set; }
 
-		public IEnumerable<string> Statuses { get; set; }
+		public IEnumerable<VerificationStatus> Statuses { get; set; }
 
 		public bool? IncludePrivate { get; set; }
 	}
