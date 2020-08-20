@@ -1,6 +1,6 @@
 ﻿namespace Knoema.Meta
 {
-	public class ResourceUsageModel
+	public class ResourceUsage
 	{
 		public string CommunityId { get; set; }
 		public string CommunityName { get; set; }
