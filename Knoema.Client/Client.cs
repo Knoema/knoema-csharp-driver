@@ -272,6 +272,33 @@ namespace Knoema
 			return ApiGet<UploadResult>("/api/1.0/upload/status", new Dictionary<string, string> { { "id", uploadId.ToString() } });
 		}
 
+		public async Task SetStartUpdate(string datasetId)
+		{
+			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_host, "/api/1.0/upload/startupdate"))
+			{
+				Content = new StringContent(JsonConvert.SerializeObject(new { DatasetId = datasetId }), Encoding.UTF8, "application/json")
+			};
+			var response = await ProcessRequest(message);
+			response.EnsureSuccessStatusCode();
+		}
+
+		public async Task SetFinishUpdate(string datasetId, DateTime? nextRun,	bool successful, string reasonMessage = null)
+		{
+			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_host, "/api/1.0/upload/endupdate"))
+			{
+				Content = new StringContent(JsonConvert.SerializeObject(
+				new
+				{
+					DatasetId = datasetId,
+					Successful = successful,
+					ErrorMessage = reasonMessage,
+					NextRun = nextRun
+				}), Encoding.UTF8, "application/json")
+			};
+			var response = await ProcessRequest(message);
+			response.EnsureSuccessStatusCode();
+		}
+
 		public async Task<UploadResult> UploadDataset(string filename, string datasetName)
 		{
 			var postResult = UploadPost(filename).Result;
