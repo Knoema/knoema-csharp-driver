@@ -28,5 +28,6 @@ namespace Knoema.Meta
 		public VerificationStatus Status { get; set; }
 		[JsonIgnore] // dodging from ambiguous between json object property
 		public DatasetSettings Settings { get; set; }
+		public ReplacementDataset ReplacementDataset { get; set; }
 	}
 }
