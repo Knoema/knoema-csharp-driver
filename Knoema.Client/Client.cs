@@ -623,5 +623,10 @@ namespace Knoema
 		{
 			return ApiPost<IReadOnlyCollection<ResourceStatistics>>("/api/1.0/frontend/ResourceStatistics", new StringContent(JsonConvert.SerializeObject(new { ResourceIds = ids }), Encoding.UTF8, "application/json"));
 		}
+
+		public Task<IReadOnlyList<CompanyModel>> GetCompanies()
+		{
+			return ApiGet<IReadOnlyList<CompanyModel>>("/api/1.0/meta/tickers");
+		}
 	}
 }
