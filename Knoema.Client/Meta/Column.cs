@@ -1,9 +1,32 @@
 ﻿namespace Knoema.Meta
 {
+	public enum ColumnType
+	{
+		Date = 0,
+		Text = 1,
+		Number = 2,
+		Location = 3,
+		Currency = 4,
+		Latitude = 7,
+		Longitude = 8
+	}
+
+	public enum ColumnStatus
+	{
+		Dimension = 0,
+		Measure = 1,
+		Date = 2,
+		Detail = 3
+	}
+
 	public class Column
 	{
+		public string Id { get; set; }
 		public string Name { get; set; }
 		public int Order { get; set; }
-		public string Type { get; set; }
+		public ColumnType Type { get; set; }
+		public ColumnStatus Status { get; set; }
+		public string DimensionId { get; set; }
+		public string DimensionFieldId { get; set; }
 	}
 }
