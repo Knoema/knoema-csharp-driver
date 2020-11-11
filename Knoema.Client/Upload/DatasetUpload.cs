@@ -14,6 +14,7 @@ namespace Knoema.Upload
 			UploadFormatType = verifyResult.UploadFormatType;
 			Columns = verifyResult.Columns;
 			FlatDSUpdateOptions = verifyResult.FlatDSUpdateOptions;
+			RegularDSUpdateOptions = verifyResult.RegularDSUpdateOptions;
 			if (verifyResult.MetadataDetails != null)
 			{
 				Name = verifyResult.MetadataDetails.DatasetName;
@@ -38,6 +39,7 @@ namespace Knoema.Upload
 		public object UploadFormatType { get; set; }
 		public string Url { get; set; }
 		public FlatDatasetUpdateOptions FlatDSUpdateOptions { get; set; }
+		public RegularDatasetUpdateOptions? RegularDSUpdateOptions { get; set; }
 		public IDictionary<string, string> MetadataFieldValues { get; set; }
 		public int? StartAtRow { get; set; }
 		public bool Public { get; set; }

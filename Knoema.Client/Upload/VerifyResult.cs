@@ -11,6 +11,7 @@ namespace Knoema.Upload
 		public List<object> Columns { get; set; }
 		public DatasetUploadDetails MetadataDetails { get; set; }
 		public FlatDatasetUpdateOptions FlatDSUpdateOptions { get; set; }
+		public RegularDatasetUpdateOptions? RegularDSUpdateOptions { get; set; }
 		public DatasetUploadReport AdvanceReport { get; set; }
 	}
 }

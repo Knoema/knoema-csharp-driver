@@ -315,6 +315,7 @@ namespace Knoema
 				UploadFormatType = verifyResult.UploadFormatType,
 				Columns = verifyResult.Columns,
 				FlatDSUpdateOptions = verifyResult.FlatDSUpdateOptions,
+				RegularDSUpdateOptions = verifyResult.RegularDSUpdateOptions,
 				FileProperty = postResult.Properties
 			};
 
