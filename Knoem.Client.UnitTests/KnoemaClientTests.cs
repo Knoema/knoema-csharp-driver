@@ -217,5 +217,26 @@ namespace Knoema.UnitTests
 				Directory.Delete(tempFolder, recursive: true);
 			}
 		}
+
+		[TestMethod]
+		public void GetDataBegin()
+		{
+			var client = new Client("knoema.com");
+			var request = new PivotRequest
+			{
+				Dataset = "fzoaozc",
+				Header = new List<PivotRequestItem> { new PivotRequestItem { DimensionId = "Time", UiMode = "AllData" } },
+				Stub = new List<PivotRequestItem> {	new PivotRequestItem { DimensionId = "country", Members = new List<object> { 1000010 } } },
+				Filter = new List<PivotRequestItem> { new PivotRequestItem { DimensionId = "indicator", Members = new List<object> { 1000000 } } },
+				Frequencies = new List<string> { "A" },
+				DetailColumns = new[] { "*" }
+			};
+
+			var result = client.GetDataBegin(request).GetAwaiter().GetResult();
+
+			Assert.IsNotNull(result.Descriptor);
+			Assert.AreEqual(2, result.Descriptor.DetailColumns.Count());
+			Assert.AreEqual("EndPeriod", result.Descriptor.DetailColumns.ElementAt(0).Name);
+		}
 	}
 }
