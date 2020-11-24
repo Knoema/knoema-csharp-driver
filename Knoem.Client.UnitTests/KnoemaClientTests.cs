@@ -237,6 +237,13 @@ namespace Knoema.UnitTests
 			Assert.IsNotNull(result.Descriptor);
 			Assert.AreEqual(2, result.Descriptor.DetailColumns.Count());
 			Assert.AreEqual("EndPeriod", result.Descriptor.DetailColumns.ElementAt(0).Name);
+
+			var detailColumns = result.Descriptor.DetailColumns.Select(c => c.Name).OrderBy(c => c).ToArray();
+			var detailValues = result.Data.First().DetailValues;
+			var valuesColumns = detailValues.Keys.OrderBy(k => k).ToArray();
+			Assert.IsTrue(Enumerable.SequenceEqual(detailColumns, valuesColumns));
+			Assert.AreEqual(29, detailValues["EndPeriod"].Count());
+			Assert.AreEqual(29, detailValues["Annotation"].Count());
 		}
 	}
 }

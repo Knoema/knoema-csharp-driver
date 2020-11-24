@@ -1,6 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
@@ -21,6 +22,16 @@ namespace Knoema.Data
 			{
 				ContractResolver = new CamelCasePropertyNamesContractResolver()
 			};
+		}
+
+		[OnDeserialized]
+		internal void OnDeserialized(StreamingContext context)
+		{
+			var detailColumns = Descriptor.DetailColumns?.Select(c => c.Name).ToArray();
+			foreach (var item in GetData() ?? Enumerable.Empty<TimeSeriesRawData>())
+			{
+				item.InitAfterDeserialized(detailColumns);
+			}
 		}
 	}
 }
