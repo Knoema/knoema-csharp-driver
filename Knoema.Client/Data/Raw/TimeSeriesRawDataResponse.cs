@@ -14,20 +14,12 @@ namespace Knoema.Data
 
 		public string ContinuationToken { get; set; }
 
-		public abstract IEnumerable<TimeSeriesRawData> GetData();
-
-		public static JsonSerializerSettings GetSerializerSettings()
-		{
-			return new JsonSerializerSettings
-			{
-				ContractResolver = new CamelCasePropertyNamesContractResolver()
-			};
-		}
+		protected abstract IEnumerable<TimeSeriesRawData> GetData();
 
 		[OnDeserialized]
 		internal void OnDeserialized(StreamingContext context)
 		{
-			var detailColumns = Descriptor.DetailColumns?.Select(c => c.Name).ToArray();
+			var detailColumns = Descriptor?.DetailColumns?.Select(c => c.Name).ToArray();
 			foreach (var item in GetData() ?? Enumerable.Empty<TimeSeriesRawData>())
 			{
 				item.InitAfterDeserialized(detailColumns);
