@@ -629,5 +629,49 @@ namespace Knoema
 		{
 			return ApiGet<IReadOnlyList<CompanyModel>>("/api/1.0/meta/tickers");
 		}
+
+		public Task<int> GetSeriesCount(string datasetId)
+		{
+			return ApiPost<int>($"/api/1.1/data/dataset/{datasetId}/count", new StringContent(JsonConvert.SerializeObject(
+				new 
+				{ 
+					IncludeUnitsInfo = false 
+				}), 
+				Encoding.UTF8, 
+				"application/json"));
+		}
+
+		public async Task CreateReplacement(string originalDatasetId, string replacementDatasetId)
+		{
+			var message = new HttpRequestMessage(HttpMethod.Post, GetUri(_host, $"/api/1.0/meta/dataset/{originalDatasetId}"))
+			{
+				Content = new StringContent(JsonConvert.SerializeObject(
+					new
+					{
+						ReplacementDatasetId = replacementDatasetId
+					}), Encoding.UTF8, "application/json")
+			};
+			var response = await ProcessRequest(message);
+			response.EnsureSuccessStatusCode();
+			
+			var responseContent = await response.Content.ReadAsStringAsync();
+			if (!string.IsNullOrEmpty(responseContent))
+			{
+				var resultStatus = new ResultStatusViewModel();
+
+				try
+				{
+					resultStatus = JsonConvert.DeserializeObject<ResultStatusViewModel>(responseContent);
+				}
+				catch { }
+
+				if (string.Equals("failed", resultStatus.Status, StringComparison.OrdinalIgnoreCase))
+				{
+					if (resultStatus.Errors.Any())
+						throw new WebException($"Remote server returned error {string.Join(Environment.NewLine, resultStatus.Errors)}");
+					throw new WebException($"Remote server returned status \"{resultStatus.Status}\"");
+				}
+			}
+		}
 	}
 }

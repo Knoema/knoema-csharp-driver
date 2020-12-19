@@ -19,6 +19,12 @@
 		Detail = 3
 	}
 
+	public enum ColumnGroupingType
+	{
+		Property = 0,
+		Hierarchy = 1
+	}
+
 	public class Column
 	{
 		public string Id { get; set; }
