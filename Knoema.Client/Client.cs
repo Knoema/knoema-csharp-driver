@@ -663,7 +663,10 @@ namespace Knoema
 				{
 					resultStatus = JsonConvert.DeserializeObject<ResultStatusViewModel>(responseContent);
 				}
-				catch { }
+				catch (Exception e)
+				{
+					throw new InvalidOperationException($"Unable to read response on replacement set: {e.Message}");
+				}
 
 				if (string.Equals("failed", resultStatus.Status, StringComparison.OrdinalIgnoreCase))
 				{
