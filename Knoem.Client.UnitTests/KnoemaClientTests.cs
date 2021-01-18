@@ -249,7 +249,7 @@ namespace Knoema.UnitTests
 		[TestMethod]
 		public void GetDatasetSeriesCount()
 		{
-			var client = new Client("knoema.com", "fFOqlU", "dpuCSts4xBmSLA");
+			var client = new Client("knoema.com");
 
 			var seriesCount = client.GetSeriesCount("ooctknb").GetAwaiter().GetResult();
 			Assert.AreEqual(7267, seriesCount);
@@ -258,7 +258,7 @@ namespace Knoema.UnitTests
 		[TestMethod]
 		public void GetDatasetSettingsColumns()
 		{
-			var client = new Client("knoema.com", "fFOqlU", "dpuCSts4xBmSLA");
+			var client = new Client("knoema.com");
 
 			var dataset = client.GetDataset("ooctknb").GetAwaiter().GetResult();
 			Assert.AreEqual(10, dataset.Settings.Columns.Count());
@@ -274,7 +274,15 @@ namespace Knoema.UnitTests
 		[TestMethod]
 		public void SetDatasetReplacement()
 		{
-			var client = new Client("knoema.com", "fFOqlU", "dpuCSts4xBmSLA");
+			var appId = ConfigurationManager.AppSettings["AppId"];
+			if (string.IsNullOrEmpty(appId))
+				throw new ArgumentException("Please add app id to configuration");
+
+			var appSecret = ConfigurationManager.AppSettings["AppSecret"];
+			if (string.IsNullOrEmpty(appSecret))
+				throw new ArgumentException("Please add app secret to configuration");
+
+			var client = new Client("knoema.com", appId, appSecret);
 
 			client.CreateReplacement("ooctknb", "lhbcznd").GetAwaiter().GetResult();
 
@@ -291,7 +299,15 @@ namespace Knoema.UnitTests
 		[ExpectedException(typeof(WebException))]
 		public void SetDatasetReplacementWithError()
 		{
-			var client = new Client("knoema.com", "fFOqlU", "dpuCSts4xBmSLA");
+			var appId = ConfigurationManager.AppSettings["AppId"];
+			if (string.IsNullOrEmpty(appId))
+				throw new ArgumentException("Please add app id to configuration");
+
+			var appSecret = ConfigurationManager.AppSettings["AppSecret"];
+			if (string.IsNullOrEmpty(appSecret))
+				throw new ArgumentException("Please add app secret to configuration");
+
+			var client = new Client("knoema.com", appId, appSecret);
 
 			client.CreateReplacement("lhbcznd", "brzysmc").GetAwaiter().GetResult();
 		}
