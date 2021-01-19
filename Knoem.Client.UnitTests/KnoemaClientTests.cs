@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 using System.Linq;
-
+using System.Net;
 using Knoema.Data;
 using Knoema.Search;
 using Knoema.Search.TimeseriesSearch;
@@ -244,6 +244,72 @@ namespace Knoema.UnitTests
 			Assert.IsTrue(Enumerable.SequenceEqual(detailColumns, valuesColumns));
 			Assert.AreEqual(29, detailValues["EndPeriod"].Count());
 			Assert.AreEqual(29, detailValues["Annotation"].Count());
+		}
+
+		[TestMethod]
+		public void GetDatasetSeriesCount()
+		{
+			var client = new Client("knoema.com");
+
+			var seriesCount = client.GetSeriesCount("ooctknb").GetAwaiter().GetResult();
+			Assert.AreEqual(7267, seriesCount);
+		}
+
+		[TestMethod]
+		public void GetDatasetSettingsColumns()
+		{
+			var client = new Client("knoema.com");
+
+			var dataset = client.GetDataset("ooctknb").GetAwaiter().GetResult();
+			Assert.AreEqual(10, dataset.Settings.Columns.Count());
+			Assert.AreEqual(1, dataset.Settings.Columns.Count(c => c.Name == "Country" && c.GroupedTo == null && c.Status == Meta.ColumnStatus.Dimension));
+			Assert.AreEqual(1, dataset.Settings.Columns.Count(c => c.Name == "ISO" && c.GroupedTo == "Country" && c.Status == Meta.ColumnStatus.Dimension && c.GroupedAs == Meta.ColumnGroupingType.Property));
+			Assert.AreEqual(1, dataset.Settings.Columns.Count(c => c.Name == "Subject" && c.GroupedTo == null && c.Status == Meta.ColumnStatus.Dimension));
+			Assert.AreEqual(1, dataset.Settings.Columns.Count(c => c.Name == "Notes" && c.GroupedTo == "Subject" && c.Status == Meta.ColumnStatus.Dimension && c.GroupedAs == Meta.ColumnGroupingType.Property));
+			Assert.AreEqual(1, dataset.Settings.Columns.Count(c => c.Name == "Date" && c.IdName == "Date" && c.GroupedTo == null && c.Status == Meta.ColumnStatus.Date && c.Type == Meta.ColumnType.Date));
+			Assert.AreEqual(1, dataset.Settings.Columns.Count(c => c.Name == "Value" && c.IdName == "Value" && c.GroupedTo == null && c.Status == Meta.ColumnStatus.Measure && c.Type == Meta.ColumnType.Number));
+			Assert.AreEqual(1, dataset.Settings.Columns.Count(c => c.Name == "Estimates Start After" && c.IdName == "Estimates-Start-After" && c.GroupedTo == null && c.Status == Meta.ColumnStatus.Detail && c.Type == Meta.ColumnType.Text));
+		}
+
+		[TestMethod]
+		public void SetDatasetReplacement()
+		{
+			var appId = ConfigurationManager.AppSettings["AppId"];
+			if (string.IsNullOrEmpty(appId))
+				throw new ArgumentException("Please add app id to configuration");
+
+			var appSecret = ConfigurationManager.AppSettings["AppSecret"];
+			if (string.IsNullOrEmpty(appSecret))
+				throw new ArgumentException("Please add app secret to configuration");
+
+			var client = new Client("knoema.com", appId, appSecret);
+
+			client.CreateReplacement("ooctknb", "lhbcznd").GetAwaiter().GetResult();
+
+			var dataset = client.GetDataset("ooctknb").GetAwaiter().GetResult();
+			Assert.AreEqual("lhbcznd", dataset.ReplacementDataset.Id);
+
+			client.CreateReplacement("ooctknb", "brzysmc").GetAwaiter().GetResult();
+
+			dataset = client.GetDataset("ooctknb").GetAwaiter().GetResult();
+			Assert.AreEqual("brzysmc", dataset.ReplacementDataset.Id);
+		}
+
+		[TestMethod]
+		[ExpectedException(typeof(WebException))]
+		public void SetDatasetReplacementWithError()
+		{
+			var appId = ConfigurationManager.AppSettings["AppId"];
+			if (string.IsNullOrEmpty(appId))
+				throw new ArgumentException("Please add app id to configuration");
+
+			var appSecret = ConfigurationManager.AppSettings["AppSecret"];
+			if (string.IsNullOrEmpty(appSecret))
+				throw new ArgumentException("Please add app secret to configuration");
+
+			var client = new Client("knoema.com", appId, appSecret);
+
+			client.CreateReplacement("lhbcznd", "brzysmc").GetAwaiter().GetResult();
 		}
 	}
 }
