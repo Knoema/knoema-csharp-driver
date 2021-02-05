@@ -25,5 +25,7 @@ namespace Knoema.Meta
 		public IEnumerable<VerificationStatus> Statuses { get; set; }
 
 		public bool? IncludePrivate { get; set; }
+
+		public bool AddPortalDatasets { get; set; }
 	}
 }
