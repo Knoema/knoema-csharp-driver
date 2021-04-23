@@ -45,5 +45,6 @@ namespace Knoema.Meta
 		public string SourceName { get; set; }
 
 		public string TermsOfUseLink { get; set; }
+		public string RawDataUrl { get; set; }
 	}
 }

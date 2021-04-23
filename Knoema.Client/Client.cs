@@ -605,6 +605,11 @@ namespace Knoema
 			return fileNames;
 		}
 
+		public Task<RawDataFilesModel> GetRawDataFiles(string datasetId)
+		{
+			return ApiGet<RawDataFilesModel>($"/api/1.0/meta/dataset/{datasetId}/raw");
+		}
+		
 		public Task<IEnumerable<DataOpsDatasetViewModel>> GetDatasetStats(DataOpsDatasetsRequest request)
 		{
 			return ApiPost<IEnumerable<DataOpsDatasetViewModel>>("/api/1.0/meta/DatasetsStats", request);
