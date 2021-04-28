@@ -4,6 +4,7 @@ using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using Knoema.Data;
 using Knoema.Search;
 using Knoema.Search.TimeseriesSearch;
@@ -130,7 +131,7 @@ namespace Knoema.UnitTests
 
 			Assert.IsNotNull(series);
 
-			var seriesId = data.MakeId(Frequency.Annual, new[] { 1000030, 1000040 }, new[] { countryName, subjectName });
+			var seriesId = data.MakeId(Frequency.Annual, new[] { "1000030", "1000040" }, new[] { countryName, subjectName });
 
 			Assert.AreEqual(seriesId, series);
 			Assert.AreEqual(seriesId.ToString(), series.ToString());
@@ -310,6 +311,82 @@ namespace Knoema.UnitTests
 			var client = new Client("knoema.com", appId, appSecret);
 
 			client.CreateReplacement("lhbcznd", "brzysmc").GetAwaiter().GetResult();
+		}
+
+		[TestMethod]
+		public async Task GetDataBeginExternalDataset()
+		{
+			var appId = ConfigurationManager.AppSettings["AppId"];
+			if (string.IsNullOrEmpty(appId))
+				throw new ArgumentException("Please add app id to configuration");
+
+			var appSecret = ConfigurationManager.AppSettings["AppSecret"];
+			if (string.IsNullOrEmpty(appSecret))
+				throw new ArgumentException("Please add app secret to configuration");
+
+			var host = ConfigurationManager.AppSettings["HostWithExternalDataset"];
+			if (string.IsNullOrEmpty(host))
+				throw new ArgumentException("Please add HostWithExternalDataset to configuration");
+
+			var datasetId = ConfigurationManager.AppSettings["ExternalDatasetId"];
+			if (string.IsNullOrEmpty(datasetId))
+				throw new ArgumentException("Please add ExternalDatasetId to configuration");
+
+			var client = new Client(host, appId, appSecret);
+			var request = new PivotRequest
+			{
+				Dataset = datasetId,
+				Header = new List<PivotRequestItem> { new PivotRequestItem { DimensionId = "Time", UiMode = "AllData" } },
+				Stub = new List<PivotRequestItem>
+				{
+					new PivotRequestItem { DimensionId = "INDICATOR", Members = new List<object> { "Number Of Applications Completed" }},
+				},
+				Filter = new List<PivotRequestItem>
+				{
+					new PivotRequestItem { DimensionId = "PRODUCTNAME", Members = new List<object> { "Universal Life" }},
+					new PivotRequestItem { DimensionId = "RESIDENCYSTATE", Members = new List<object> { "NA" }},
+					new PivotRequestItem { DimensionId = "AGEGROUP", Members = new List<object> { "40-44" }},
+					new PivotRequestItem { DimensionId = "GENDER", Members = new List<object> { "FEMALE" }},
+					new PivotRequestItem { DimensionId = "HOUSEHOLDINCOME", Members = new List<object> { "Over $250,000" }},
+					new PivotRequestItem { DimensionId = "RISKCLASS", Members = new List<object> { "NA" } }
+				},
+				Frequencies = new List<string> { "D" },
+				DetailColumns = new[] { "*" }
+			};
+			var result = await client.GetDataBegin(request);
+			
+			Assert.IsTrue(result.Data.Any());
+		}
+
+		[TestMethod]
+		public async Task GetDimensionByIdExternalDataset()
+		{
+			var appId = ConfigurationManager.AppSettings["AppId"];
+			if (string.IsNullOrEmpty(appId))
+				throw new ArgumentException("Please add app id to configuration");
+
+			var appSecret = ConfigurationManager.AppSettings["AppSecret"];
+			if (string.IsNullOrEmpty(appSecret))
+				throw new ArgumentException("Please add app secret to configuration");
+
+			var host = ConfigurationManager.AppSettings["HostWithExternalDataset"];
+			if (string.IsNullOrEmpty(host))
+				throw new ArgumentException("Please add HostWithExternalDataset to configuration");
+
+			var datasetId = ConfigurationManager.AppSettings["ExternalDatasetId"];
+			if (string.IsNullOrEmpty(datasetId))
+				throw new ArgumentException("Please add ExternalDatasetId to configuration");
+
+			var dimensionId = ConfigurationManager.AppSettings["ExternalDatasetDimensionId"];
+			if (string.IsNullOrEmpty(dimensionId))
+				throw new ArgumentException("Please add ExternalDatasetDimensionId to configuration");
+
+
+			var client = new Client(host, appId, appSecret);
+
+			var dim = await client.GetDatasetDimension(datasetId, dimensionId);
+
+			Assert.IsTrue(dim.Items.Any());
 		}
 	}
 }

@@ -20,7 +20,7 @@ namespace Knoema.Series
 			}
 		}
 
-		public TimeSeriesValues(RegularTimeSeriesRawData d, Frequency frequency, AttributesMap<int> keys, AttributesMap<object> attributes, Series<DateTime, double> values)
+		public TimeSeriesValues(RegularTimeSeriesRawData d, Frequency frequency, AttributesMap<string> keys, AttributesMap<object> attributes, Series<DateTime, double> values)
 			: base(frequency, keys, attributes)
 		{
 			StartDate = d.StartDate;
