@@ -179,7 +179,7 @@ namespace Knoema.Series
 				PivotRequestItem dimItem = null;
 				foreach (var memberKey in dimKeys.Values)
 				{
-					if (memberKey != "")
+					if (!string.IsNullOrEmpty(memberKey))
 					{
 						if (dimItem == null)
 						{
