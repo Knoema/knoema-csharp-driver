@@ -88,7 +88,7 @@ namespace Knoema.Series
 							_dimensions[dimId] = keys;
 						}
 						foreach (var key in value)
-							keys[key] = "";
+							keys[key] = string.Empty;
 					}
 				}
 			}
