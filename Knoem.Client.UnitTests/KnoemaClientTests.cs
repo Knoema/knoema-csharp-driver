@@ -62,12 +62,12 @@ namespace Knoema.UnitTests
 			request.DimensionRequest.Add(new DimensionRequestItem
 			{
 				DimensionId = "country",
-				Members = { 1000000, 1000100 }
+				Members = { "1000000", "1000100" }
 			});
 			request.DimensionRequest.Add(new DimensionRequestItem
 			{
 				DimensionId = "subject",
-				Members = { 1000000, 1000200 }
+				Members = { "1000000", "1000200" }
 			});
 			var tsList = client.GetTimeSeriesList("IMFWEO2017Oct", request).GetAwaiter().GetResult();
 			Assert.AreEqual(2, tsList.Count());
