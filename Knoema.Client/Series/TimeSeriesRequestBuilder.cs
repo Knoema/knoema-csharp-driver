@@ -88,7 +88,7 @@ namespace Knoema.Series
 							_dimensions[dimId] = keys;
 						}
 						foreach (var key in value)
-							keys[key] = string.Empty;
+							keys[key] = null;
 					}
 				}
 			}
@@ -179,7 +179,7 @@ namespace Knoema.Series
 				PivotRequestItem dimItem = null;
 				foreach (var memberKey in dimKeys.Values)
 				{
-					if (!string.IsNullOrEmpty(memberKey))
+					if (memberKey != null)
 					{
 						if (dimItem == null)
 						{
