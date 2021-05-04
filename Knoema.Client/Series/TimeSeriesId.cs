@@ -5,10 +5,10 @@ namespace Knoema.Series
 	public class TimeSeriesId
 	{
 		public readonly Frequency Freq;
-		public readonly AttributesMap<int> Keys;
+		public readonly AttributesMap<string> Keys;
 		public readonly AttributesMap<object> Attributes;
 
-		public TimeSeriesId(Frequency frequency, AttributesMap<int> keys, AttributesMap<object> attributes)
+		public TimeSeriesId(Frequency frequency, AttributesMap<string> keys, AttributesMap<object> attributes)
 		{
 			Freq = frequency;
 			Keys = keys;
@@ -25,7 +25,7 @@ namespace Knoema.Series
 			var result = (int)Freq;
 			var d = Keys.Values;
 			for (var i = 0; i < d.Length; i++)
-				result = result * 17 + d[i];
+				result = result * 17 + d[i].GetHashCode();
 			return result;
 		}
 

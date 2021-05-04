@@ -11,10 +11,10 @@ namespace Knoema.Series
 		private readonly IReadOnlyDictionary<string, int> _dimensionIdsMap;
 		private readonly string[] _dimensions;
 		private readonly string[] _attributes;
-		private readonly IReadOnlyDictionary<string, int>[] _dimensionKeyMaps;
+		private readonly IReadOnlyDictionary<string, string>[] _dimensionKeyMaps;
 		private readonly IReadOnlyDictionary<TimeSeriesId, TimeSeriesValues> _values;
 
-		public TimeSeriesFrame(IReadOnlyDictionary<string, int> dimensionIdsMap, string[] dimensions, IReadOnlyDictionary<string, int>[] dimensionKeyMaps, string[] attributes, IReadOnlyDictionary<TimeSeriesId, TimeSeriesValues> values)
+		public TimeSeriesFrame(IReadOnlyDictionary<string, int> dimensionIdsMap, string[] dimensions, IReadOnlyDictionary<string, string>[] dimensionKeyMaps, string[] attributes, IReadOnlyDictionary<TimeSeriesId, TimeSeriesValues> values)
 		{
 			_dimensionIdsMap = dimensionIdsMap;
 			_dimensions = dimensions;
@@ -71,12 +71,12 @@ namespace Knoema.Series
 			}
 		}
 
-		public TimeSeriesId MakeId(string frequency, int[] keys, object[] attributes = null)
+		public TimeSeriesId MakeId(string frequency, string[] keys, object[] attributes = null)
 		{
 			return MakeId(frequency.ToFrequency(), keys, attributes);
 		}
 
-		public TimeSeriesId MakeId(Frequency frequency, int[] keys, object[] attributes = null)
+		public TimeSeriesId MakeId(Frequency frequency, string[] keys, object[] attributes = null)
 		{
 			if (attributes == null)
 			{
@@ -86,7 +86,7 @@ namespace Knoema.Series
 			}
 
 			return new TimeSeriesId(frequency,
-				new AttributesMap<int>(_dimensions, keys),
+				new AttributesMap<string>(_dimensions, keys),
 				new AttributesMap<object>(_attributes, attributes));
 		}
 
@@ -106,7 +106,7 @@ namespace Knoema.Series
 		{
 			var frequency = Frequency.Annual;
 
-			var dims = new int[_dimensions.Length];
+			var dims = new string[_dimensions.Length];
 			var attrs = new string[_attributes.Length];
 			foreach (var pair in properties)
 			{
@@ -125,21 +125,13 @@ namespace Knoema.Series
 					var attrIndex = dimIndex >= 0 ? dimIndex : Array.IndexOf(_attributes, name, _dimensions.Length);
 					if (dimIndex >= 0)
 					{
-						if (value is int)
-						{
-							int dimKey = (int)value;
-							dims[dimIndex] = dimKey;
-							if (attrIndex >= 0)
-								attrs[attrIndex] = dimKey.ToString();
-						}
-						else
-						{
-							var val = Convert.ToString(value);
-							int dimKey;
-							if (_dimensionKeyMaps[dimIndex].TryGetValue(val, out dimKey))
+
+						var val = Convert.ToString(value);
+						string dimKey;
+						if (_dimensionKeyMaps[dimIndex].TryGetValue(val, out dimKey))
 								dims[dimIndex] = dimKey;
-							attrs[attrIndex] = val;
-						}
+						attrs[attrIndex] = val;
+						
 					}
 					else
 					{

@@ -8,7 +8,7 @@ namespace Knoema.Series
 {
 	public class TimeSeriesFrameBuilder
 	{
-		private readonly Dictionary<string, int>[] _dimensionKeyMaps;
+		private readonly Dictionary<string, string>[] _dimensionKeyMaps;
 		private readonly string[] _dimensions;
 		private readonly IReadOnlyDictionary<string, int> _dimensionIdsMap;
 		private readonly string[] _attributes;
@@ -16,7 +16,7 @@ namespace Knoema.Series
 		private readonly Dictionary<TimeSeriesId, TimeSeriesValues> _values;
 		private readonly Dictionary<Tuple<DateTime, DateTime, Frequency>, IReadOnlyList<DateTime>> _timeRangeCache;
 
-		public TimeSeriesFrameBuilder(Dataset dataset, IReadOnlyDictionary<string, string> dimensionIdsMap, Func<string, Dictionary<string, int>> dimensionMappingFactory)
+		public TimeSeriesFrameBuilder(Dataset dataset, IReadOnlyDictionary<string, string> dimensionIdsMap, Func<string, Dictionary<string, string>> dimensionMappingFactory)
 		{
 			var dims = new List<string>();
 			foreach (var dim in dataset.Dimensions)
@@ -54,9 +54,9 @@ namespace Knoema.Series
 				attributeIds[_attributes[i]] = i;
 			_attributeIds = attributeIds;
 
-			_dimensionKeyMaps = new Dictionary<string, int>[_dimensions.Length];
+			_dimensionKeyMaps = new Dictionary<string, string>[_dimensions.Length];
 			for (var i = 0; i < _dimensionKeyMaps.Length; i++)
-				_dimensionKeyMaps[i] = dimensionMappingFactory(_dimensions[i]) ?? new Dictionary<string, int>();
+				_dimensionKeyMaps[i] = dimensionMappingFactory(_dimensions[i]) ?? new Dictionary<string, string>();
 
 			_values = new Dictionary<TimeSeriesId, TimeSeriesValues>();
 			_timeRangeCache = new Dictionary<Tuple<DateTime, DateTime, Frequency>, IReadOnlyList<DateTime>>();
@@ -70,7 +70,7 @@ namespace Knoema.Series
 
 		public void Add(RegularTimeSeriesRawData item)
 		{
-			var dimensions = new int[_dimensions.Length];
+			var dimensions = new string[_dimensions.Length];
 			var attributes = new object[_attributes.Length];
 			foreach (var dim in item.Dimensions)
 			{
@@ -110,7 +110,7 @@ namespace Knoema.Series
 			var values = new TimeSeriesValues(
 				item,
 				frequency,
-				new AttributesMap<int>(_dimensions, dimensions),
+				new AttributesMap<string>(_dimensions, dimensions),
 				new AttributesMap<object>(_attributes, attributes),
 				valuesBuilder.Series);
 

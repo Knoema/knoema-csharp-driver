@@ -11,14 +11,14 @@ namespace Knoema.Series
 		private readonly Client _client;
 		private IEnumerable<string> _frequencies;
 		private readonly IReadOnlyDictionary<string, string> _dimensionIdsMap;
-		private readonly Dictionary<string, Dictionary<string, int>> _dimensions;
+		private readonly Dictionary<string, Dictionary<string, string>> _dimensions;
 		private readonly Dataset _dataset;
 
 		public TimeSeriesRequestBuilder(Client client, Dataset dataset, IEnumerable<KeyValuePair<string, object>> request)
 		{
 			_client = client;
 			_dataset = dataset;
-			_dimensions = new Dictionary<string, Dictionary<string, int>>();
+			_dimensions = new Dictionary<string, Dictionary<string, string>>();
 
 			var dimensionIdsMap = new Dictionary<string, string>();
 			if (dataset.Dimensions != null)
@@ -66,7 +66,7 @@ namespace Knoema.Series
 				var dimId = GetDimensionId(dimension);
 				if (!string.IsNullOrEmpty(dimId))
 				{
-					Dictionary<string, int> keys;
+					Dictionary<string, string> keys;
 					if (_dimensions.TryGetValue(dimId, out keys))
 						return keys.Keys;
 				}
@@ -81,14 +81,14 @@ namespace Knoema.Series
 						_dimensions.Remove(dimId);
 					else
 					{
-						Dictionary<string, int> keys;
+						Dictionary<string, string> keys;
 						if (!_dimensions.TryGetValue(dimId, out keys))
 						{
-							keys = new Dictionary<string, int>();
+							keys = new Dictionary<string, string>();
 							_dimensions[dimId] = keys;
 						}
 						foreach (var key in value)
-							keys[key] = 0;
+							keys[key] = null;
 					}
 				}
 			}
@@ -101,9 +101,9 @@ namespace Knoema.Series
 			return id;
 		}
 
-		public Dictionary<string, int> GetDimensionMembersMapping(string dimension)
+		public Dictionary<string, string> GetDimensionMembersMapping(string dimension)
 		{
-			Dictionary<string, int> result;
+			Dictionary<string, string> result;
 			_dimensions.TryGetValue(dimension, out result);
 			return result;
 		}
@@ -179,7 +179,7 @@ namespace Knoema.Series
 				PivotRequestItem dimItem = null;
 				foreach (var memberKey in dimKeys.Values)
 				{
-					if (memberKey != 0)
+					if (memberKey != null)
 					{
 						if (dimItem == null)
 						{
