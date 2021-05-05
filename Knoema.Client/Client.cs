@@ -126,7 +126,7 @@ namespace Knoema
 			var request = new HttpRequestMessage(HttpMethod.Get, uri);
 			var response = await ProcessRequest(request);
 			EnsureSuccessApiCall(response);
-			var responseContent = await response.Content.ReadAsStringAsync();
+			var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 			return JsonConvert.DeserializeObject<T>(responseContent);
 		}
 
@@ -139,7 +139,7 @@ namespace Knoema
 			};
 			var response = await ProcessRequest(request);
 			EnsureSuccessApiCall(response);
-			var responseContent = await response.Content.ReadAsStringAsync();
+			var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 			return JsonConvert.DeserializeObject<T>(responseContent);
 		}
 
@@ -321,7 +321,7 @@ namespace Knoema
 
 			var result = UploadSubmit(upload).Result;
 			while (UploadStatus(result.Id).Result.Status == "in progress")
-				await Task.Delay(5000);
+				await Task.Delay(5000).ConfigureAwait(false);
 
 			return await UploadStatus(result.Id);
 		}
@@ -376,7 +376,7 @@ namespace Knoema
 
 			var sendAsyncResp = await ProcessRequest(message);
 			sendAsyncResp.EnsureSuccessStatusCode();
-			var strRead = await sendAsyncResp.Content.ReadAsStringAsync();
+			var strRead = await sendAsyncResp.Content.ReadAsStringAsync().ConfigureAwait(false);
 			var result = JsonConvert.DeserializeObject<Response>(strRead);
 			foreach (var datasetItem in result.Items)
 				foreach (var series in datasetItem.Items)
@@ -411,7 +411,7 @@ namespace Knoema
 
 			var sendAsyncResp = await ProcessRequest(message);
 			sendAsyncResp.EnsureSuccessStatusCode();
-			var strRead = await sendAsyncResp.Content.ReadAsStringAsync();
+			var strRead = await sendAsyncResp.Content.ReadAsStringAsync().ConfigureAwait(false);
 			return JsonConvert.DeserializeObject<SearchTimeSeriesResponse>(strRead);
 		}
 
@@ -458,7 +458,7 @@ namespace Knoema
 				i++;
 				if (i >= maxWaitCount)
 					throw new Exception("Maximum wait count reached");
-				await Task.Delay(TimeSpan.FromSeconds(spinDelayInSeconds));
+				await Task.Delay(TimeSpan.FromSeconds(spinDelayInSeconds)).ConfigureAwait(false);
 			}
 
 			if (taskResult.Status == Meta.TaskStatus.Cancelled)
@@ -513,9 +513,9 @@ namespace Knoema
 						Stream dataStream = null;
 						try
 						{
-							response = t.GetAwaiter().GetResult();
+							response = t.ConfigureAwait(false).GetAwaiter().GetResult();
 							content = response.Content;
-							dataStream = content.ReadAsStreamAsync().GetAwaiter().GetResult();
+							dataStream = content.ReadAsStreamAsync().ConfigureAwait(false).GetAwaiter().GetResult();
 							return dataStream.CopyToAsync(output, 4096 * 16, cts.Token).ContinueWith(_ =>
 							{
 								dataStream.Dispose();
@@ -659,7 +659,7 @@ namespace Knoema
 			var response = await ProcessRequest(message);
 			response.EnsureSuccessStatusCode();
 			
-			var responseContent = await response.Content.ReadAsStringAsync();
+			var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 			if (!string.IsNullOrEmpty(responseContent))
 			{
 				var resultStatus = new ResultStatusViewModel();
