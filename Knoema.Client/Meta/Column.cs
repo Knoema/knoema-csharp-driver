@@ -16,7 +16,11 @@
 		Dimension = 0,
 		Measure = 1,
 		Date = 2,
-		Detail = 3
+		Detail = 3,
+		Attribute = 4,
+		Frequency = 5,
+		Scale = 6,
+		Unit = 7
 	}
 
 	public enum ColumnGroupingType
