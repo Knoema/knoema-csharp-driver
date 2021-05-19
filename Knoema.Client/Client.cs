@@ -620,14 +620,17 @@ namespace Knoema
 			return ApiPost<IReadOnlyCollection<Resource>>("/api/1.0/frontend/Resources", new StringContent(JsonConvert.SerializeObject(new { ids }), Encoding.UTF8, "application/json"));
 		}
 
+		[Obsolete]
 		public Task<IEnumerable<ResourceUsage>> GetResourceUsage(string datasetId)
 		{
-			return ApiGet<IEnumerable<ResourceUsage>>($"/api/1.0/frontend/ResourceUsage/{datasetId}");
+			return Task.FromResult(new ResourceUsage[] { }.AsEnumerable());
 		}
 
+		[Obsolete]
 		public Task<IReadOnlyCollection<ResourceStatistics>> GetResourceStatistics(IEnumerable<string> ids)
 		{
-			return ApiPost<IReadOnlyCollection<ResourceStatistics>>("/api/1.0/frontend/ResourceStatistics", new StringContent(JsonConvert.SerializeObject(new { ResourceIds = ids }), Encoding.UTF8, "application/json"));
+			IReadOnlyCollection<ResourceStatistics> empty = new ResourceStatistics[] { };
+			return Task.FromResult(empty);
 		}
 
 		public Task<IReadOnlyList<CompanyModel>> GetCompanies()
