@@ -12,5 +12,6 @@ namespace Knoema.Meta
 		public string DatasetId { get; set; }
 		public IEnumerable<DimensionMember> Items { get; set; }
 		public IEnumerable<DimensionField> Fields { get; set; }
+		public bool IsCompany { get; set; }
 	}
 }
