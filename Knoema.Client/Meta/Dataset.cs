@@ -20,6 +20,7 @@ namespace Knoema.Meta
 		public DateTime? AccessedOn { get; set; }
 		public DateTime? NextReleaseDate { get; set; }
 		public DateTime LastUpdatedOn { get; set; }
+		public DateTime? LastDataChangedOn { get; set; }
 		public DateTime? ExpectedUpdateDate { get; set; }
 		public DatasetSource Source { get; set; }
 		public IEnumerable<Dimension> Dimensions { get; set; }

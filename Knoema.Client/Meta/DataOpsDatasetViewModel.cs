@@ -42,6 +42,8 @@ namespace Knoema.Meta
 
 		public DateTime LastUpdatedOn { get; set; }
 
+		public DateTime? LastDataChangedOn { get; set; }
+
 		public string SourceName { get; set; }
 
 		public string TermsOfUseLink { get; set; }
