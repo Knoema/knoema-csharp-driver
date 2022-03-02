@@ -40,6 +40,7 @@ namespace Knoema.Upload
 		public string Url { get; set; }
 		public FlatDatasetUpdateOptions FlatDSUpdateOptions { get; set; }
 		public RegularDatasetUpdateOptions? RegularDSUpdateOptions { get; set; }
+		public DatasetUpdateOptions DatasetUpdateOptions { get; set; }
 		public IDictionary<string, string> MetadataFieldValues { get; set; }
 		public int? StartAtRow { get; set; }
 		public bool Public { get; set; }
