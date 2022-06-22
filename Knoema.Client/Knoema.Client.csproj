@@ -31,7 +31,7 @@
   <ItemGroup>
     <PackageReference Include="Deedle" Version="2.0.2" />
     <PackageReference Include="FSharp.Core" Version="4.6.2" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 
 </Project>
