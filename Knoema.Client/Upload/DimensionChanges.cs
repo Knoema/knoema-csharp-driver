@@ -5,9 +5,9 @@ namespace Knoema.Upload
 	public class DimensionChanges
 	{
 		public List<string> AddedFields { get; set; }
-		public int AddedMembers { get; set; }
-		public int UpdatedMembers { get; set; }
-		public int TotalMembersInUpdate { get; set; }
+		public long AddedMembers { get; set; }
+		public long UpdatedMembers { get; set; }
+		public long TotalMembersInUpdate { get; set; }
 
 		public DimensionChanges()
 		{
