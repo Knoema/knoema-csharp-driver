@@ -6,10 +6,10 @@ namespace Knoema.Upload
 {
 	public class DatasetUploadReport
 	{
-		public int AddedDataPoints { get; set; }
-		public int UpdatedDataPoints { get; set; }
-		public int DeletedDataPoints { get; set; }
-		public int AddedMetadataElements { get; set; }
+		public long AddedDataPoints { get; set; }
+		public long UpdatedDataPoints { get; set; }
+		public long DeletedDataPoints { get; set; }
+		public long AddedMetadataElements { get; set; }
 
 		[Obsolete("Use MetadataChanges.", false)]
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
@@ -18,7 +18,7 @@ namespace Knoema.Upload
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public MetadataChanges MetadataChanges { get; set; }
 
-		public int TotalRecords { get; set; }
+		public long TotalRecords { get; set; }
 		public bool IsFlatDataset { get; set; }
 		[JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
 		public List<string> UploadComments { get; set; }
